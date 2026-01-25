@@ -4,10 +4,10 @@ import { prisma } from '@/lib/db';
 // GET /api/items/[id] - Public endpoint for getting a single item
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const { id } = await params;
     
     const item = await prisma.item.findUnique({
       where: {
