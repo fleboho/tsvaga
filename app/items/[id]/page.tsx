@@ -45,7 +45,7 @@ export default async function ItemDetailPage({
   }
   
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         {/* Image Gallery */}
         <div className="p-6">

@@ -21,7 +21,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       {/* Hero Section */}
       <div className="text-center mb-12">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Search Found Items</h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+        <p className="text-xl text-gray-600 max-w-4xl mx-auto">
           Browse through items found by administrators. Use our powerful search to filter by keywords, category, or location.
         </p>
       </div>

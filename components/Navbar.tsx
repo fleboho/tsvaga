@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useSession, signOut } from "next-auth/react"
@@ -10,7 +11,7 @@ export default function Navbar() {
 
   return (
     <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
@@ -32,9 +33,14 @@ export default function Navbar() {
                     Dashboard
                   </Link>
                   {session.user.role === "ADMIN" && (
-                    <Link href="/admin/items" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                      Admin
-                    </Link>
+                    <>
+                      <Link href="/admin/dashboard" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        Admin Dashboard
+                      </Link>
+                      <Link href="/admin/items" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                        Manage Items
+                      </Link>
+                    </>
                   )}
                 </>
               )}
@@ -109,9 +115,14 @@ export default function Navbar() {
                     Dashboard
                   </Link>
                   {session.user.role === "ADMIN" && (
-                    <Link href="/admin/items" className="block px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
-                      Admin
-                    </Link>
+                    <>
+                      <Link href="/admin/dashboard" className="block px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
+                        Admin Dashboard
+                      </Link>
+                      <Link href="/admin/items" className="block px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
+                        Manage Items
+                      </Link>
+                    </>
                   )}
                 </>
               )}

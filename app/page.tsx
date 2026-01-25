@@ -9,13 +9,13 @@ export default function Home() {
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
           Lost Something? <span className="text-primary-600">Find It Here</span>
         </h1>
-        <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
+        <p className="text-xl text-gray-600 mb-10 max-w-4xl mx-auto">
           Our platform helps reunite people with their lost belongings. Search through found items, 
           create alerts for items you've lost, and get notified when matching items are found.
         </p>
         
         {/* Search Bar */}
-        <div className="max-w-3xl mx-auto mb-12">
+        <div className="max-w-4xl mx-auto mb-12">
           <div className="bg-white rounded-2xl shadow-lg p-2 border border-gray-200">
             <div className="p-4">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 text-left">Search Found Items</h3>
@@ -41,7 +41,7 @@ export default function Home() {
       <section className="py-12">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">How It Works</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">
+          <p className="text-gray-600 max-w-3xl mx-auto">
             A simple three-step process to help you find your lost items
           </p>
         </div>
@@ -132,7 +132,7 @@ export default function Home() {
       <section className="py-12 text-center" id="how-it-works">
         <div className="bg-primary-600 rounded-2xl p-8 md:p-12 text-white">
           <h2 className="text-3xl font-bold mb-6">Ready to Find Your Lost Item?</h2>
-          <p className="text-primary-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-primary-100 mb-8 max-w-3xl mx-auto">
             Join our community today. Whether you've lost something or found an item, our platform makes the process simple and secure.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
