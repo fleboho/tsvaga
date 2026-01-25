@@ -120,6 +120,121 @@ export default function AdminItemsClient() {
     }
   };
 
+  const handleEditItem = (item: Item) => {
+    // For now, show a simple prompt for editing
+    const newTitle = prompt('Edit title:', item.title);
+    const newDescription = prompt('Edit description:', item.description);
+    const newCategory = prompt('Edit category:', item.category || '');
+    const newLocation = prompt('Edit location:', item.location || '');
+    
+    if (newTitle !== null || newDescription !== null || newCategory !== null || newLocation !== null) {
+      updateItem(item.id, {
+        title: newTitle !== null ? newTitle : item.title,
+        description: newDescription !== null ? newDescription : item.description,
+        category: newCategory !== null ? newCategory : item.category || '',
+        location: newLocation !== null ? newLocation : item.location || '',
+      });
+    }
+  };
+
+  const updateItem = async (itemId: string, updates: any) => {
+    try {
+      setError('');
+      const response = await fetch(`/api/admin/items/${itemId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      });
+      
+      if (response.status === 403) {
+        setError('Admin access required');
+        return;
+      }
+      
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to update item');
+      }
+      
+      const data = await response.json();
+      
+      // Update item in list
+      setItems(items.map(item => 
+        item.id === itemId ? data.item : item
+      ));
+      
+      alert('Item updated successfully!');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update item');
+    }
+  };
+
+  const handleDeleteItem = async (itemId: string) => {
+    if (!confirm('Are you sure you want to delete this item? It will be moved to the archive.')) {
+      return;
+    }
+    
+    try {
+      setError('');
+      const response = await fetch(`/api/admin/items/${itemId}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.status === 403) {
+        setError('Admin access required');
+        return;
+      }
+      
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to delete item');
+      }
+      
+      // Remove item from list
+      setItems(items.filter(item => item.id !== itemId));
+      
+      alert('Item deleted successfully (moved to archive)!');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete item');
+    }
+  };
+
+  const handleMarkReturned = async (itemId: string) => {
+    if (!confirm('Mark this item as returned?')) {
+      return;
+    }
+    
+    try {
+      setError('');
+      const response = await fetch(`/api/admin/items/${itemId}/mark-returned`, {
+        method: 'POST',
+      });
+      
+      if (response.status === 403) {
+        setError('Admin access required');
+        return;
+      }
+      
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to mark item as returned');
+      }
+      
+      const data = await response.json();
+      
+      // Update item in list
+      setItems(items.map(item => 
+        item.id === itemId ? data.item : item
+      ));
+      
+      alert('Item marked as returned successfully!');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to mark item as returned');
+    }
+  };
+
   if (status === 'loading' || loading) {
     return (
       <div className="max-w-6xl mx-auto">
@@ -273,6 +388,28 @@ export default function AdminItemsClient() {
                             <div className="font-medium text-gray-900">{item.title}</div>
                             <div className="text-sm text-gray-500 truncate max-w-xs">
                               {item.description}
+                            </div>
+                            <div className="mt-2 flex space-x-2">
+                              <button
+                                onClick={() => handleEditItem(item)}
+                                className="text-xs text-primary-600 hover:text-primary-800"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteItem(item.id)}
+                                className="text-xs text-red-600 hover:text-red-800"
+                              >
+                                Delete
+                              </button>
+                              {item.status === 'AVAILABLE' && (
+                                <button
+                                  onClick={() => handleMarkReturned(item.id)}
+                                  className="text-xs text-green-600 hover:text-green-800"
+                                >
+                                  Mark Returned
+                                </button>
+                              )}
                             </div>
                           </div>
                         </td>

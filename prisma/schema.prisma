@@ -31,6 +31,20 @@ model Item {
   createdById String?
 }
 
+model DeletedItem {
+  id          String     @id @default(cuid())
+  title       String
+  description String
+  category    String?
+  location    String?
+  status      ItemStatus
+  createdAt   DateTime
+  updatedAt   DateTime
+  deletedAt   DateTime   @default(now())
+  createdById String?
+  // Note: We don't need relation since original user might be deleted
+}
+
 model Alert {
   id          String   @id @default(cuid())
   keywords    String
