@@ -28,14 +28,30 @@ export default function RegisterPage() {
     
     setLoading(true)
     
-    // Mock registration for now
-    setTimeout(() => {
-      setSuccess("Registration functionality will be implemented in the next phase. For now, you can use any credentials in the login page (authentication is mocked).")
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok) {
+        setError(data.error || 'Registration failed')
+      } else {
+        setSuccess('Registration successful! You can now login with your credentials.')
+        setEmail("")
+        setPassword("")
+        setConfirmPassword("")
+      }
+    } catch (error) {
+      setError('An error occurred during registration. Please try again.')
+    } finally {
       setLoading(false)
-      setEmail("")
-      setPassword("")
-      setConfirmPassword("")
-    }, 1000)
+    }
   }
 
   return (
@@ -120,7 +136,7 @@ export default function RegisterPage() {
         
         <div className="mt-8 pt-6 border-t border-gray-200">
           <p className="text-gray-500 text-sm text-center">
-            Note: User registration requires database setup and password hashing. For MVP-1 demo, authentication is mocked.
+            Registration creates a user account with the USER role. Admins must be created directly in the database.
           </p>
         </div>
       </div>

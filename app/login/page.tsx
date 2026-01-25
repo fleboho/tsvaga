@@ -98,7 +98,7 @@ export default function LoginPage() {
         
         <div className="mt-8 pt-6 border-t border-gray-200">
           <p className="text-gray-500 text-sm text-center">
-            Note: This is a demo application. For MVP-1, authentication is functional but user registration requires database setup.
+            Use the admin credentials (admin@lostandfound.com / admin123) or register a new user account.
           </p>
         </div>
       </div>
