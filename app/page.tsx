@@ -1,89 +1,150 @@
 import Link from "next/link"
+import SearchForm from "./search/SearchForm"
 
 export default function Home() {
   return (
-    <div className="text-center">
-      <h1 className="text-4xl font-bold text-gray-900 mb-6">
-        Welcome to Lost & Found
-      </h1>
-      <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-        A simple platform to help people find lost items. Search for found items, 
-        create alerts for items you've lost, and get notified when matching items are found.
-      </p>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Search Items</h2>
-          <p className="text-gray-600 mb-4">
-            Browse through found items reported by administrators. Use keywords to search for specific items.
+    <div>
+      {/* Hero Section */}
+      <section className="text-center py-12 md:py-20">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
+          Lost Something? <span className="text-primary-600">Find It Here</span>
+        </h1>
+        <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
+          Our platform helps reunite people with their lost belongings. Search through found items, 
+          create alerts for items you've lost, and get notified when matching items are found.
+        </p>
+        
+        {/* Search Bar */}
+        <div className="max-w-3xl mx-auto mb-12">
+          <div className="bg-white rounded-2xl shadow-lg p-2 border border-gray-200">
+            <div className="p-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 text-left">Search Found Items</h3>
+              <SearchForm compact={true} />
+            </div>
+          </div>
+          <p className="text-gray-500 text-sm mt-4">
+            Search by keywords, category, or location. No account required.
           </p>
-          <Link 
-            href="/search" 
-            className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded"
-          >
-            Search Now
-          </Link>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Create Alerts</h2>
-          <p className="text-gray-600 mb-4">
-            Register an account and create alerts for items you've lost. Get email notifications when matching items are found.
-          </p>
-          <Link 
-            href="/register" 
-            className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded"
-          >
-            Register Now
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link href="/search" className="btn-primary px-8 py-3 text-lg">
+            Browse All Items
           </Link>
+          <Link href="/register" className="btn-secondary px-8 py-3 text-lg">
+            Create Alert
+          </Link>
+        </div>
+      </section>
+      
+      {/* Features Section */}
+      <section className="py-12">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">How It Works</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">
+            A simple three-step process to help you find your lost items
+          </p>
         </div>
         
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Admin Portal</h2>
-          <p className="text-gray-600 mb-4">
-            Administrators can manage found items, verify details, and help connect found items with their owners.
-          </p>
-          <Link 
-            href="/login" 
-            className="inline-block bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded"
-          >
-            Admin Login
-          </Link>
-        </div>
-      </div>
-      
-      <div className="bg-white p-8 rounded-lg shadow-md max-w-3xl mx-auto">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">How It Works</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center">
-            <div className="bg-primary-100 text-primary-800 rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mx-auto mb-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          <div className="card card-hover p-8 text-center">
+            <div className="w-16 h-16 bg-primary-100 text-primary-600 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-6">
               1
             </div>
-            <h3 className="font-medium text-gray-800 mb-2">Report Found Item</h3>
-            <p className="text-gray-600 text-sm">
-              Admins report found items with details like description, category, and location.
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Report or Search</h3>
+            <p className="text-gray-600">
+              Admins report found items with detailed descriptions. You can search through all reported items using keywords, categories, or locations.
             </p>
           </div>
-          <div className="text-center">
-            <div className="bg-primary-100 text-primary-800 rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mx-auto mb-3">
+          
+          <div className="card card-hover p-8 text-center">
+            <div className="w-16 h-16 bg-primary-100 text-primary-600 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-6">
               2
             </div>
-            <h3 className="font-medium text-gray-800 mb-2">System Matches Alerts</h3>
-            <p className="text-gray-600 text-sm">
-              System automatically checks for matching user alerts and sends notifications.
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Create Alerts</h3>
+            <p className="text-gray-600">
+              Register an account and create alerts for items you've lost. Our system will automatically notify you when matching items are found.
             </p>
           </div>
-          <div className="text-center">
-            <div className="bg-primary-100 text-primary-800 rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mx-auto mb-3">
+          
+          <div className="card card-hover p-8 text-center">
+            <div className="w-16 h-16 bg-primary-100 text-primary-600 rounded-2xl flex items-center justify-center text-2xl font-bold mx-auto mb-6">
               3
             </div>
-            <h3 className="font-medium text-gray-800 mb-2">Connect & Return</h3>
-            <p className="text-gray-600 text-sm">
-              Users contact admin through the platform to claim and return found items.
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">Connect & Reunite</h3>
+            <p className="text-gray-600">
+              Contact the admin through our secure platform to claim found items. We facilitate the connection while protecting everyone's privacy.
             </p>
           </div>
         </div>
-      </div>
+        
+        <div className="bg-gradient-to-r from-primary-50 to-blue-50 rounded-2xl p-8 md:p-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Why Use Our Platform?</h3>
+              <ul className="space-y-4">
+                <li className="flex items-start">
+                  <svg className="w-6 h-6 text-primary-600 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-gray-700"><strong>Centralized Database:</strong> All found items in one place, easily searchable</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="w-6 h-6 text-primary-600 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-gray-700"><strong>Proactive Notifications:</strong> Get alerted when items matching your description are found</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="w-6 h-6 text-primary-600 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span className="text-gray-700"><strong>Privacy Protected:</strong> All communication goes through admin - no direct contact required</span>
+                </li>
+              </ul>
+            </div>
+            <div className="bg-white rounded-xl p-6 shadow-lg">
+              <h4 className="text-lg font-semibold text-gray-800 mb-4">Quick Stats</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="text-2xl font-bold text-primary-600">100+</div>
+                  <div className="text-sm text-gray-600">Items Found</div>
+                </div>
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="text-2xl font-bold text-primary-600">24h</div>
+                  <div className="text-sm text-gray-600">Avg. Response Time</div>
+                </div>
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="text-2xl font-bold text-primary-600">85%</div>
+                  <div className="text-sm text-gray-600">Success Rate</div>
+                </div>
+                <div className="text-center p-4 bg-gray-50 rounded-lg">
+                  <div className="text-2xl font-bold text-primary-600">50+</div>
+                  <div className="text-sm text-gray-600">Happy Users</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      {/* CTA Section */}
+      <section className="py-12 text-center" id="how-it-works">
+        <div className="bg-primary-600 rounded-2xl p-8 md:p-12 text-white">
+          <h2 className="text-3xl font-bold mb-6">Ready to Find Your Lost Item?</h2>
+          <p className="text-primary-100 mb-8 max-w-2xl mx-auto">
+            Join our community today. Whether you've lost something or found an item, our platform makes the process simple and secure.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/register" className="bg-white text-primary-600 hover:bg-gray-100 font-semibold py-3 px-8 rounded-lg text-lg transition-colors">
+              Get Started Free
+            </Link>
+            <Link href="/search" className="bg-transparent border-2 border-white text-white hover:bg-white/10 font-semibold py-3 px-8 rounded-lg text-lg transition-colors">
+              Browse Items
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }

@@ -9,6 +9,10 @@ interface FilterOptions {
   locations: string[];
 }
 
+interface SearchFormProps {
+  compact?: boolean;
+}
+
 async function fetchFilterOptions(): Promise<FilterOptions> {
   try {
     const response = await fetch('/api/items/filters');
@@ -22,7 +26,7 @@ async function fetchFilterOptions(): Promise<FilterOptions> {
   }
 }
 
-export default function SearchForm() {
+export default function SearchForm({ compact = false }: SearchFormProps) {
   const router = useRouter();
   const { params, updateParams } = useSearchParams();
   const [filterOptions, setFilterOptions] = useState<FilterOptions>({ categories: [], locations: [] });
@@ -59,12 +63,77 @@ export default function SearchForm() {
     router.push('/search');
   };
 
+  if (compact) {
+    return (
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          {/* Search Input */}
+          <div className="md:col-span-2">
+            <input
+              type="text"
+              id="q"
+              value={params.q || ''}
+              onChange={(e) => updateParams({ q: e.target.value })}
+              placeholder="Search by keywords (wallet, keys, phone...)"
+              className="input-field"
+            />
+          </div>
+
+          {/* Category Select */}
+          <div>
+            <select
+              id="category"
+              value={params.category || ''}
+              onChange={(e) => updateParams({ category: e.target.value })}
+              className="input-field"
+              disabled={isLoading}
+            >
+              <option value="">All Categories</option>
+              {filterOptions.categories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Location Select */}
+          <div>
+            <select
+              id="location"
+              value={params.location || ''}
+              onChange={(e) => updateParams({ location: e.target.value })}
+              className="input-field"
+              disabled={isLoading}
+            >
+              <option value="">All Locations</option>
+              {filterOptions.locations.map((location) => (
+                <option key={location} value={location}>
+                  {location}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="flex justify-end">
+          <button
+            type="submit"
+            className="btn-primary"
+          >
+            Search
+          </button>
+        </div>
+      </form>
+    );
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Search Input */}
         <div>
-          <label htmlFor="q" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="q" className="block text-sm font-medium text-gray-700 mb-2">
             Search Keywords
           </label>
           <input
@@ -73,20 +142,20 @@ export default function SearchForm() {
             value={params.q || ''}
             onChange={(e) => updateParams({ q: e.target.value })}
             placeholder="e.g., wallet, keys, phone..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="input-field"
           />
         </div>
 
         {/* Category Select */}
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
             Category
           </label>
           <select
             id="category"
             value={params.category || ''}
             onChange={(e) => updateParams({ category: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="input-field"
             disabled={isLoading}
           >
             <option value="">All Categories</option>
@@ -100,14 +169,14 @@ export default function SearchForm() {
 
         {/* Location Select */}
         <div>
-          <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
             Location
           </label>
           <select
             id="location"
             value={params.location || ''}
             onChange={(e) => updateParams({ location: e.target.value })}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="input-field"
             disabled={isLoading}
           >
             <option value="">All Locations</option>
@@ -120,7 +189,7 @@ export default function SearchForm() {
         </div>
       </div>
 
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="text-sm text-gray-500">
           {isLoading ? 'Loading filters...' : 
            `Found ${filterOptions.categories.length} categories and ${filterOptions.locations.length} locations`}
@@ -130,56 +199,56 @@ export default function SearchForm() {
           <button
             type="button"
             onClick={handleReset}
-            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            className="btn-secondary"
           >
-            Reset
+            Reset Filters
           </button>
           <button
             type="submit"
-            className="px-6 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="btn-primary"
           >
-            Search
+            Search Items
           </button>
         </div>
       </div>
 
       {/* Active filters display */}
       {(params.q || params.category || params.location) && (
-        <div className="pt-4 border-t border-gray-200">
-          <div className="flex items-center space-x-2">
+        <div className="pt-6 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <span className="text-sm font-medium text-gray-700">Active filters:</span>
             <div className="flex flex-wrap gap-2">
               {params.q && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                   Keywords: {params.q}
                   <button
                     type="button"
                     onClick={() => updateParams({ q: '' })}
-                    className="ml-1.5 text-blue-600 hover:text-blue-800"
+                    className="ml-1.5 text-primary-600 hover:text-primary-800"
                   >
                     ×
                   </button>
                 </span>
               )}
               {params.category && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-secondary-100 text-secondary-800">
                   Category: {params.category}
                   <button
                     type="button"
                     onClick={() => updateParams({ category: '' })}
-                    className="ml-1.5 text-green-600 hover:text-green-800"
+                    className="ml-1.5 text-secondary-600 hover:text-secondary-800"
                   >
                     ×
                   </button>
                 </span>
               )}
               {params.location && (
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-accent-100 text-accent-800">
                   Location: {params.location}
                   <button
                     type="button"
                     onClick={() => updateParams({ location: '' })}
-                    className="ml-1.5 text-purple-600 hover:text-purple-800"
+                    className="ml-1.5 text-accent-600 hover:text-accent-800"
                   >
                     ×
                   </button>

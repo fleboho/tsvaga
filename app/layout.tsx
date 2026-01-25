@@ -7,8 +7,8 @@ import Navbar from "@/components/Navbar"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Lost & Found MVP-1",
-  description: "A web application to help people find lost items",
+  title: "Lost & Found | Reuniting People with Their Belongings",
+  description: "A modern platform to help people find lost items. Search found items, create alerts, and get notified when your lost items are found.",
 }
 
 export default function RootLayout({
@@ -17,14 +17,22 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" className="scroll-smooth">
+      <body className={`${inter.className} antialiased`}>
         <AuthProvider>
-          <div className="min-h-screen bg-gray-50">
+          <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
             <Navbar />
-            <main className="container mx-auto px-4 py-8">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               {children}
             </main>
+            <footer className="border-t border-gray-200 bg-white py-8">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center text-gray-600">
+                  <p className="text-sm">© {new Date().getFullYear()} Lost & Found MVP-1. All rights reserved.</p>
+                  <p className="text-xs mt-2 text-gray-500">This is a demonstration platform for reuniting lost items with their owners.</p>
+                </div>
+              </div>
+            </footer>
           </div>
         </AuthProvider>
       </body>

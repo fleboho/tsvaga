@@ -90,7 +90,7 @@ export default function ContactForm({ itemId, itemTitle, userEmail }: ContactFor
     <>
       <button
         onClick={handleOpen}
-        className="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-6 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+        className="btn-primary"
       >
         Contact Admin
       </button>
@@ -100,37 +100,52 @@ export default function ContactForm({ itemId, itemTitle, userEmail }: ContactFor
           <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
             {/* Background overlay */}
             <div 
-              className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" 
+              className="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-50 backdrop-blur-sm" 
               onClick={handleClose}
               aria-hidden="true"
             ></div>
 
             {/* Modal */}
-            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-              <div>
-                <div className="mt-3 text-center sm:mt-5">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Contact Admin About: {itemTitle}
+            <div className="inline-block align-bottom bg-white rounded-2xl px-6 pt-6 pb-6 text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+              <div className="absolute top-4 right-4">
+                <button
+                  onClick={handleClose}
+                  className="text-gray-400 hover:text-gray-500 transition-colors"
+                >
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="mt-3">
+                <div className="text-center">
+                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary-100 mb-4">
+                    <svg className="h-6 w-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    Contact About This Item
                   </h3>
-                  <p className="text-sm text-gray-500 mb-6">
-                    Fill out the form below to contact the administrator about this item. 
-                    The admin will review your message and get back to you.
+                  <p className="text-gray-600 mb-8">
+                    Fill out the form below to contact the administrator about <span className="font-semibold text-gray-900">{itemTitle}</span>.
                   </p>
                 </div>
 
                 {submitStatus === 'success' ? (
-                  <div className="rounded-md bg-green-50 p-4 mb-6">
+                  <div className="rounded-xl bg-green-50 border border-green-200 p-6 mb-6">
                     <div className="flex">
                       <div className="flex-shrink-0">
-                        <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                        <svg className="h-6 w-6 text-green-500" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
                       </div>
-                      <div className="ml-3">
-                        <h3 className="text-sm font-medium text-green-800">
+                      <div className="ml-4">
+                        <h3 className="text-lg font-semibold text-green-800">
                           Message Sent Successfully!
                         </h3>
-                        <div className="mt-2 text-sm text-green-700">
+                        <div className="mt-2 text-green-700">
                           <p>
                             Your message has been sent to the administrator. They will review 
                             your request and contact you soon.
@@ -140,9 +155,9 @@ export default function ContactForm({ itemId, itemTitle, userEmail }: ContactFor
                     </div>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-4">
+                  <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                         Your Name *
                       </label>
                       <input
@@ -152,13 +167,13 @@ export default function ContactForm({ itemId, itemTitle, userEmail }: ContactFor
                         value={formData.name}
                         onChange={handleChange}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="input-field"
                         placeholder="Enter your full name"
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                         Email Address *
                       </label>
                       <input
@@ -168,13 +183,13 @@ export default function ContactForm({ itemId, itemTitle, userEmail }: ContactFor
                         value={formData.email}
                         onChange={handleChange}
                         required
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="input-field"
                         placeholder="Enter your email address"
                       />
                     </div>
 
                     <div>
-                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
+                      <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
                         Message *
                       </label>
                       <textarea
@@ -184,24 +199,24 @@ export default function ContactForm({ itemId, itemTitle, userEmail }: ContactFor
                         onChange={handleChange}
                         required
                         rows={4}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500"
+                        className="input-field resize-none"
                         placeholder="Describe why you believe this item belongs to you or any relevant details..."
                       />
                     </div>
 
                     {submitStatus === 'error' && (
-                      <div className="rounded-md bg-red-50 p-4">
+                      <div className="rounded-xl bg-red-50 border border-red-200 p-6">
                         <div className="flex">
                           <div className="flex-shrink-0">
-                            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                            <svg className="h-6 w-6 text-red-500" viewBox="0 0 20 20" fill="currentColor">
                               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                             </svg>
                           </div>
-                          <div className="ml-3">
-                            <h3 className="text-sm font-medium text-red-800">
+                          <div className="ml-4">
+                            <h3 className="text-lg font-semibold text-red-800">
                               Error submitting form
                             </h3>
-                            <div className="mt-2 text-sm text-red-700">
+                            <div className="mt-2 text-red-700">
                               <p>{errorMessage || 'Please check your information and try again.'}</p>
                             </div>
                           </div>
@@ -209,11 +224,11 @@ export default function ContactForm({ itemId, itemTitle, userEmail }: ContactFor
                       </div>
                     )}
 
-                    <div className="mt-6 flex justify-end space-x-3">
+                    <div className="mt-8 flex justify-end space-x-4">
                       <button
                         type="button"
                         onClick={handleClose}
-                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                        className="btn-secondary"
                         disabled={isSubmitting}
                       >
                         Cancel
@@ -221,7 +236,7 @@ export default function ContactForm({ itemId, itemTitle, userEmail }: ContactFor
                       <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="btn-primary"
                       >
                         {isSubmitting ? (
                           <span className="flex items-center">
