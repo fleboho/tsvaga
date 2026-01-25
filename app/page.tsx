@@ -1,5 +1,5 @@
 import Link from "next/link"
-import SearchForm from "./search/SearchForm"
+import HomeSearchForm from "./search/HomeSearchForm"
 
 export default function Home() {
   return (
@@ -19,7 +19,7 @@ export default function Home() {
           <div className="bg-white rounded-2xl shadow-lg p-2 border border-gray-200">
             <div className="p-4">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 text-left">Search Found Items</h3>
-              <SearchForm compact={true} />
+              <HomeSearchForm />
             </div>
           </div>
           <p className="text-gray-500 text-sm mt-4">
