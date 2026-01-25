@@ -109,3 +109,5 @@ You are building **MVP-1**, not a production platform.
 Respect scope boundaries at all times.
 
 All operations are being performed on a Windows machine. Use PowerShell for terminal commands during development.
+
+create a git commit upon request, after a feature completion you should always request to have a git commit created

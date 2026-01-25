@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
+import ContactForm from '@/components/ContactForm';
 
 interface Item {
   id: string;
@@ -15,7 +16,7 @@ interface Item {
 
 async function getItem(id: string): Promise<Item | null> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/items/${id}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/items/${id}`, {
       cache: 'no-store',
     });
     
@@ -145,14 +146,33 @@ export default async function ItemDetailPage({
             </div>
           </div>
           
-          {/* Contact Admin Button */}
+          {/* Contact Admin Form */}
           <div className="mt-8 pt-6 border-t border-gray-200">
-            <p className="text-gray-600 mb-4">
-              Found this item? Contact the admin to claim it.
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Claim This Item</h2>
+            <p className="text-gray-600 mb-6">
+              If you believe this item belongs to you, please contact the administrator with details about why you think it's yours.
+              Include any identifying marks, serial numbers, or other information that can help verify your claim.
             </p>
-            <button className="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-6 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500">
-              Contact Admin
-            </button>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+              <h3 className="text-lg font-semibold text-blue-800 mb-2">Before You Contact</h3>
+              <ul className="text-blue-700 space-y-2">
+                <li className="flex items-start">
+                  <span className="inline-block bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2 mt-0.5">1</span>
+                  Make sure you can provide identifying details about the item
+                </li>
+                <li className="flex items-start">
+                  <span className="inline-block bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2 mt-0.5">2</span>
+                  Be prepared to provide proof of ownership if requested
+                </li>
+                <li className="flex items-start">
+                  <span className="inline-block bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-sm mr-2 mt-0.5">3</span>
+                  Include your contact information so the admin can reach you
+                </li>
+              </ul>
+            </div>
+            
+            <ContactForm itemId={item.id} itemTitle={item.title} />
           </div>
         </div>
       </div>
