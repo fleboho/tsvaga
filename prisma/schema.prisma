@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  alerts    Alert[]
+  items     Item[]   @relation("UserItems")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Item {
+  id          String     @id @default(cuid())
+  title       String
+  description String
+  category    String?
+  location    String?
+  status      ItemStatus @default(AVAILABLE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  createdBy   User?      @relation("UserItems", fields: [createdById], references: [id])
+  createdById String?
+}
+
+model Alert {
+  id          String   @id @default(cuid())
+  keywords    String
+  category    String?
+  location    String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ItemStatus {
+  AVAILABLE
+  RETURNED
+}
