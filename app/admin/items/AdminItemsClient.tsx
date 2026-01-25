@@ -33,6 +33,8 @@ export default function AdminItemsClient() {
     location: '',
   });
   
+  const [images, setImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
@@ -70,6 +72,49 @@ export default function AdminItemsClient() {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    
+    const newImages: File[] = [];
+    const newPreviews: string[] = [];
+    
+    // Limit to 3 images total
+    const remainingSlots = 3 - images.length;
+    const filesToAdd = Array.from(files).slice(0, remainingSlots);
+    
+    for (const file of filesToAdd) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError(`File ${file.name} is not an image`);
+        continue;
+      }
+      
+      // Validate file size (4MB)
+      if (file.size > 4 * 1024 * 1024) {
+        setError(`Image ${file.name} exceeds 4MB size limit`);
+        continue;
+      }
+      
+      newImages.push(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setImagePreviews(prev => [...prev, result]);
+      };
+      reader.readAsDataURL(file);
+    }
+    
+    setImages(prev => [...prev, ...newImages]);
+  };
+  
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
+  
   const handleCreateItem = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -78,16 +123,32 @@ export default function AdminItemsClient() {
       return;
     }
     
+    if (images.length > 3) {
+      setError('Maximum 3 images allowed per item');
+      return;
+    }
+    
     try {
       setCreating(true);
       setError('');
       
+      // Create FormData for multipart upload
+      const formData = new FormData();
+      formData.append('title', newItem.title);
+      formData.append('description', newItem.description);
+      formData.append('category', newItem.category);
+      formData.append('location', newItem.location);
+      
+      // Append images
+      images.forEach((file, index) => {
+        formData.append(`images[${index}]`, file);
+      });
+      
       const response = await fetch('/api/admin/items', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newItem),
+        body: formData,
+        // Note: Don't set Content-Type header for FormData
+        // The browser will set it automatically with boundary
       });
       
       if (response.status === 403) {
@@ -112,6 +173,8 @@ export default function AdminItemsClient() {
         category: '',
         location: '',
       });
+      setImages([]);
+      setImagePreviews([]);
       
       alert('Item created successfully!');
     } catch (err) {
@@ -121,21 +184,8 @@ export default function AdminItemsClient() {
     }
   };
 
-  const handleEditItem = (item: Item) => {
-    // For now, show a simple prompt for editing
-    const newTitle = prompt('Edit title:', item.title);
-    const newDescription = prompt('Edit description:', item.description);
-    const newCategory = prompt('Edit category:', item.category || '');
-    const newLocation = prompt('Edit location:', item.location || '');
-    
-    if (newTitle !== null || newDescription !== null || newCategory !== null || newLocation !== null) {
-      updateItem(item.id, {
-        title: newTitle !== null ? newTitle : item.title,
-        description: newDescription !== null ? newDescription : item.description,
-        category: newCategory !== null ? newCategory : item.category || '',
-        location: newLocation !== null ? newLocation : item.location || '',
-      });
-    }
+  const handleEditItem = (itemId: string) => {
+    router.push(`/admin/items/${itemId}/edit`);
   };
 
   const updateItem = async (itemId: string, updates: any) => {
@@ -330,6 +380,70 @@ export default function AdminItemsClient() {
                   />
                 </div>
                 
+                {/* Image Upload */}
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1">
+                    Images (Max 3)
+                  </label>
+                  <div className="space-y-4">
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                      <input
+                        type="file"
+                        id="image-upload"
+                        multiple
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                        disabled={creating || images.length >= 3}
+                      />
+                      <label
+                        htmlFor="image-upload"
+                        className={`cursor-pointer block ${creating || images.length >= 3 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        <div className="flex flex-col items-center justify-center">
+                          <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                          </svg>
+                          <span className="text-gray-600 text-sm">
+                            {images.length >= 3 
+                              ? 'Maximum 3 images reached' 
+                              : 'Click to upload images (JPEG, PNG, WebP, max 4MB each)'}
+                          </span>
+                          <span className="text-gray-500 text-xs mt-1">
+                            {images.length} of 3 images selected
+                          </span>
+                        </div>
+                      </label>
+                    </div>
+                    
+                    {/* Image Previews */}
+                    {imagePreviews.length > 0 && (
+                      <div className="grid grid-cols-3 gap-2">
+                        {imagePreviews.map((preview, index) => (
+                          <div key={index} className="relative">
+                            <img
+                              src={preview}
+                              alt={`Preview ${index + 1}`}
+                              className="w-full h-24 object-cover rounded-md"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                              disabled={creating}
+                            >
+                              ×
+                            </button>
+                            <div className="text-xs text-gray-500 truncate mt-1">
+                              {images[index]?.name || `Image ${index + 1}`}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
                 <button
                   type="submit"
                   disabled={creating}
@@ -392,7 +506,7 @@ export default function AdminItemsClient() {
                             </div>
                             <div className="mt-2 flex space-x-2">
                               <button
-                                onClick={() => handleEditItem(item)}
+                                onClick={() => handleEditItem(item.id)}
                                 className="text-xs text-primary-600 hover:text-primary-800"
                               >
                                 Edit
