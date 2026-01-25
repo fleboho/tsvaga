@@ -25,6 +25,7 @@ model Item {
   category    String?
   location    String?
   status      ItemStatus @default(AVAILABLE)
+  imageUrls   String[]   @default([]) // Array of image file paths
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   createdBy   User?      @relation("UserItems", fields: [createdById], references: [id])
@@ -38,6 +39,7 @@ model DeletedItem {
   category    String?
   location    String?
   status      ItemStatus
+  imageUrls   String[]   @default([]) // Array of image file paths
   createdAt   DateTime
   updatedAt   DateTime
   deletedAt   DateTime   @default(now())

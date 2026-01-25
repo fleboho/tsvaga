@@ -21,6 +21,7 @@ export async function GET(
         category: true,
         location: true,
         status: true,
+        imageUrls: true,
         createdAt: true,
         updatedAt: true,
         // Don't include createdBy for public endpoint

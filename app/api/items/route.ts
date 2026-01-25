@@ -51,6 +51,7 @@ export async function GET(request: NextRequest) {
           category: true,
           location: true,
           status: true,
+          imageUrls: true,
           createdAt: true,
           // Don't include createdBy for public endpoint
         },

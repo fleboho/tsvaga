@@ -11,6 +11,7 @@ interface Item {
   category: string | null;
   location: string | null;
   status: string;
+  imageUrls: string[];
   createdAt: string;
   createdBy: {
     email: string;
