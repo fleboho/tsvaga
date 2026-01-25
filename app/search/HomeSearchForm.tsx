@@ -14,7 +14,12 @@ async function fetchFilterOptions(): Promise<FilterOptions> {
     if (!response.ok) {
       throw new Error('Failed to fetch filter options');
     }
-    return await response.json();
+    const data = await response.json();
+    // Validate response structure
+    return {
+      categories: Array.isArray(data.categories) ? data.categories : [],
+      locations: Array.isArray(data.locations) ? data.locations : [],
+    };
   } catch (error) {
     console.error('Error fetching filter options:', error);
     return { categories: [], locations: [] };

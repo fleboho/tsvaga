@@ -8,13 +8,26 @@
 - Created reusable components for consistent UI
 
 ## Recent Changes
-1. **Additional Layout Updates for Full Width Consistency** (2025-01-25)
+1. **Runtime Error Fix - HomeSearchForm** (2025-01-25)
+   - Fixed TypeError: "Cannot read properties of undefined (reading 'map')" in HomeSearchForm.tsx
+   - Updated `/api/items/filters/route.ts` to return both categories and locations
+   - Previously only returned categories, causing `filterOptions.locations` to be undefined
+   - Added validation in `HomeSearchForm.tsx` to ensure arrays are always returned
+   - Enhanced error handling with proper type checking for API responses
+
+2. **Git Configuration Update** (2025-01-25)
+   - Updated `.gitignore` to exclude uploads directory: Added `/public/uploads/`
+   - Removed existing uploaded files from git tracking using `git rm --cached`
+   - Uploads directory will no longer be tracked in version control
+   - User-uploaded item images are now properly excluded from the repository
+
+3. **Additional Layout Updates for Full Width Consistency** (2025-01-25)
    - Updated `app/login/page.tsx`: Increased container width from `max-w-md` to `max-w-lg`
    - Updated `app/register/page.tsx`: Increased container width from `max-w-md` to `max-w-lg`
    - Updated `app/dashboard/page.tsx`: Increased container width from `max-w-4xl` to `max-w-6xl`
    - Ensured all authentication and dashboard pages have consistent wider layouts
 
-2. **Layout Updates for Full Width Design** (2025-01-25)
+4. **Layout Updates for Full Width Design** (2025-01-25)
    - Updated application layout to be wider and take up full screen width
    - Modified `app/layout.tsx`: Removed `max-w-7xl` constraints, using `w-full` instead
    - Updated `app/page.tsx`: Increased text container widths from `max-w-3xl` to `max-w-4xl`
@@ -23,7 +36,7 @@
    - Updated `components/Navbar.tsx`: Removed `max-w-7xl` constraint for full-width navbar
    - Maintained mobile-first responsive design with proper padding
 
-2. **Public Features Verification & Fixes** (2025-01-25)
+5. **Public Features Verification & Fixes** (2025-01-25)
    - Verified all public pages are implemented and functional
    - Fixed Next.js 16 compatibility issues with API route parameters (params as Promise)
    - Updated `/api/items/[id]/route.ts` to handle params as Promise
@@ -32,14 +45,14 @@
    - Seeded database with sample data for testing
    - Confirmed all public pages load correctly: home, search, item detail
 
-2. **Public Features Implementation** (Earlier)
+6. **Public Features Implementation** (Earlier)
    - Created Contact API endpoint (`/api/contact`) with Zod validation
    - Created API endpoint for fetching distinct categories/locations (`/api/items/filters`)
    - Enhanced search page with server-side search, filters, and pagination
    - Updated item detail page with working ContactForm component
    - Created reusable components: ItemCard, Pagination, ContactForm
 
-3. **Project Infrastructure** (Earlier)
+7. **Project Infrastructure** (Earlier)
    - Next.js project with TypeScript is fully set up
    - PostgreSQL database with Prisma ORM configured
    - Database schema with User, Item, Alert models implemented
@@ -89,6 +102,7 @@
 5. **Next.js 16 Compatibility**: API routes and page components now receive params as Promise, requiring await
 6. **Layout Design**: Updated to full-width design while maintaining mobile-first responsive approach
 7. **Consistent Widths**: All pages now have appropriate width constraints for better presentation on large screens
+8. **Git Management**: Uploads directory properly excluded from version control to keep repository size manageable
 
 ## Questions & Uncertainties Resolved
 1. **Email Mocking**: Implemented with detailed console.log format

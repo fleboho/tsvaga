@@ -18,8 +18,16 @@ export async function GET(
         id: true,
         title: true,
         description: true,
-        category: true,
-        location: true,
+        category: {
+          select: {
+            name: true,
+          },
+        },
+        location: {
+          select: {
+            name: true,
+          },
+        },
         status: true,
         imageUrls: true,
         createdAt: true,
@@ -35,7 +43,14 @@ export async function GET(
       );
     }
     
-    return NextResponse.json({ item });
+    // Transform item to flatten category and location
+    const transformedItem = {
+      ...item,
+      category: item.category?.name || null,
+      location: item.location?.name || null,
+    };
+    
+    return NextResponse.json({ item: transformedItem });
     
   } catch (error) {
     console.error('Error fetching item:', error);

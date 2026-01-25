@@ -1,51 +1,43 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 
-// GET /api/items/filters - Public endpoint for getting distinct categories and locations
+// GET /api/items/filters - Public endpoint for getting active categories and locations
 export async function GET() {
   try {
-    // Get distinct categories from items (excluding null/empty)
-    const categories = await prisma.item.findMany({
+    // Get active categories from the Category table
+    const categories = await prisma.category.findMany({
       where: {
-        AND: [
-          { category: { not: null } },
-          { category: { not: '' } },
-        ],
+        isActive: true,
       },
-      distinct: ['category'],
       select: {
-        category: true,
+        name: true,
       },
       orderBy: {
-        category: 'asc',
+        name: 'asc',
       },
     });
 
-    // Get distinct locations from items (excluding null/empty)
-    const locations = await prisma.item.findMany({
+    // Get active locations from the Location table
+    const locations = await prisma.location.findMany({
       where: {
-        AND: [
-          { location: { not: null } },
-          { location: { not: '' } },
-        ],
+        isActive: true,
       },
-      distinct: ['location'],
       select: {
-        location: true,
+        name: true,
       },
       orderBy: {
-        location: 'asc',
+        name: 'asc',
       },
     });
 
     // Transform the results
     const categoryList = categories
-      .map((item: { category: string | null }) => item.category)
-      .filter((category): category is string => category !== null && category !== '');
-    
+      .map((category: { name: string }) => category.name)
+      .filter((name: string | null): name is string => name !== null && name !== '');
+
     const locationList = locations
-      .map((item: { location: string | null }) => item.location)
-      .filter((location): location is string => location !== null && location !== '');
+      .map((location: { name: string }) => location.name)
+      .filter((name: string | null): name is string => name !== null && name !== '');
 
     return NextResponse.json({
       categories: categoryList,

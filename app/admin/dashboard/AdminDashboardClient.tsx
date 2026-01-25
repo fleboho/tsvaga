@@ -78,7 +78,7 @@ export default function AdminDashboardClient({
       <div className="mb-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Link
               href="/admin/items"
               className="bg-primary-50 hover:bg-primary-100 border border-primary-200 rounded-lg p-4 text-center transition-colors"
@@ -94,11 +94,34 @@ export default function AdminDashboardClient({
               <p className="text-green-600 text-sm mt-1">Create a new found item entry</p>
             </Link>
             <Link
+              href="/admin/categories"
+              className="bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg p-4 text-center transition-colors"
+            >
+              <div className="text-purple-700 font-medium">Manage Categories</div>
+              <p className="text-purple-600 text-sm mt-1">Add, edit, and delete item categories</p>
+            </Link>
+            <Link
+              href="/admin/locations"
+              className="bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg p-4 text-center transition-colors"
+            >
+              <div className="text-blue-700 font-medium">Manage Locations</div>
+              <p className="text-blue-600 text-sm mt-1">Add, edit, and delete locations</p>
+            </Link>
+          </div>
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Link
               href="/dashboard"
               className="bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg p-4 text-center transition-colors"
             >
               <div className="text-gray-700 font-medium">User Dashboard</div>
               <p className="text-gray-600 text-sm mt-1">Switch to regular user view</p>
+            </Link>
+            <Link
+              href="/admin/dashboard?view=stats"
+              className="bg-yellow-50 hover:bg-yellow-100 border border-yellow-200 rounded-lg p-4 text-center transition-colors"
+            >
+              <div className="text-yellow-700 font-medium">View Statistics</div>
+              <p className="text-yellow-600 text-sm mt-1">Detailed platform analytics</p>
             </Link>
           </div>
         </div>

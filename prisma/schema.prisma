@@ -19,48 +19,79 @@ model User {
 }
 
 model Item {
-  id          String     @id @default(cuid())
-  title       String
-  description String
-  category    String?
-  location    String?
-  status      ItemStatus @default(AVAILABLE)
-  imageUrls   String[]   @default([]) // Array of image file paths
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  createdBy   User?      @relation("UserItems", fields: [createdById], references: [id])
-  createdById String?
+  id            String     @id @default(cuid())
+  title         String
+  description   String
+  categoryId    String?
+  category      Category?  @relation(fields: [categoryId], references: [id])
+  customCategory String?   // For when user selects "Other" category
+  locationId    String?
+  location      Location?  @relation(fields: [locationId], references: [id])
+  status        ItemStatus @default(AVAILABLE)
+  imageUrls     String[]   @default([]) // Array of image file paths
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  createdBy     User?      @relation("UserItems", fields: [createdById], references: [id])
+  createdById   String?
 }
 
 model DeletedItem {
-  id          String     @id @default(cuid())
-  title       String
-  description String
-  category    String?
-  location    String?
-  status      ItemStatus
-  imageUrls   String[]   @default([]) // Array of image file paths
-  createdAt   DateTime
-  updatedAt   DateTime
-  deletedAt   DateTime   @default(now())
-  createdById String?
+  id            String     @id @default(cuid())
+  title         String
+  description   String
+  category      String?    // Keep as string for archive purposes
+  location      String?    // Keep as string for archive purposes
+  status        ItemStatus
+  imageUrls     String[]   @default([]) // Array of image file paths
+  createdAt     DateTime
+  updatedAt     DateTime
+  deletedAt     DateTime   @default(now())
+  createdById   String?
   // Note: We don't need relation since original user might be deleted
 }
 
 model Alert {
-  id          String   @id @default(cuid())
-  keywords    String
-  category    String?
-  location    String?
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  keywords      String
+  categoryId    String?
+  category      Category? @relation(fields: [categoryId], references: [id])
+  customCategory String?  // For when user selects "Other" category
+  locationId    String?
+  location      Location? @relation(fields: [locationId], references: [id])
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 enum Role {
   USER
   ADMIN
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  items       Item[]
+  alerts      Alert[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Location {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  latitude    String?  // Stored as string for flexibility
+  longitude   String?  // Stored as string for flexibility
+  address     String?
+  isActive    Boolean  @default(true)
+  items       Item[]
+  alerts      Alert[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 enum ItemStatus {

@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react';
 
 interface FilterOptions {
   categories: string[];
-  locations: string[];
 }
 
 interface SearchFormProps {
@@ -19,17 +18,18 @@ async function fetchFilterOptions(): Promise<FilterOptions> {
     if (!response.ok) {
       throw new Error('Failed to fetch filter options');
     }
-    return await response.json();
+    const data = await response.json();
+    return { categories: data.categories || [] };
   } catch (error) {
     console.error('Error fetching filter options:', error);
-    return { categories: [], locations: [] };
+    return { categories: [] };
   }
 }
 
 export default function SearchForm({ compact = false }: SearchFormProps) {
   const router = useRouter();
   const { params, updateParams } = useSearchParams();
-  const [filterOptions, setFilterOptions] = useState<FilterOptions>({ categories: [], locations: [] });
+  const [filterOptions, setFilterOptions] = useState<FilterOptions>({ categories: [] });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -50,7 +50,6 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
     
     if (params.q) queryParams.set('q', params.q);
     if (params.category) queryParams.set('category', params.category);
-    if (params.location) queryParams.set('location', params.location);
     if (params.page && params.page !== '1') queryParams.set('page', params.page);
     if (params.pageSize && params.pageSize !== '20') queryParams.set('pageSize', params.pageSize);
     
@@ -59,14 +58,14 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
   };
 
   const handleReset = () => {
-    updateParams({ q: '', category: '', location: '' });
+    updateParams({ q: '', category: '' });
     router.push('/search');
   };
 
   if (compact) {
     return (
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {/* Search Input */}
           <div className="md:col-span-2">
             <input
@@ -96,24 +95,6 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
               ))}
             </select>
           </div>
-
-          {/* Location Select */}
-          <div>
-            <select
-              id="location"
-              value={params.location || ''}
-              onChange={(e) => updateParams({ location: e.target.value })}
-              className="input-field"
-              disabled={isLoading}
-            >
-              <option value="">All Locations</option>
-              {filterOptions.locations.map((location) => (
-                <option key={location} value={location}>
-                  {location}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
         <div className="flex justify-end">
@@ -130,7 +111,7 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Search Input */}
         <div>
           <label htmlFor="q" className="block text-sm font-medium text-gray-700 mb-2">
@@ -166,33 +147,12 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
             ))}
           </select>
         </div>
-
-        {/* Location Select */}
-        <div>
-          <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
-            Location
-          </label>
-          <select
-            id="location"
-            value={params.location || ''}
-            onChange={(e) => updateParams({ location: e.target.value })}
-            className="input-field"
-            disabled={isLoading}
-          >
-            <option value="">All Locations</option>
-            {filterOptions.locations.map((location) => (
-              <option key={location} value={location}>
-                {location}
-              </option>
-            ))}
-          </select>
-        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <div className="text-sm text-gray-500">
           {isLoading ? 'Loading filters...' : 
-           `Found ${filterOptions.categories.length} categories and ${filterOptions.locations.length} locations`}
+           `Found ${filterOptions.categories.length} categories`}
         </div>
         
         <div className="flex space-x-3">
@@ -213,7 +173,7 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
       </div>
 
       {/* Active filters display */}
-      {(params.q || params.category || params.location) && (
+      {(params.q || params.category) && (
         <div className="pt-6 border-t border-gray-200">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <span className="text-sm font-medium text-gray-700">Active filters:</span>
@@ -237,18 +197,6 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
                     type="button"
                     onClick={() => updateParams({ category: '' })}
                     className="ml-1.5 text-secondary-600 hover:text-secondary-800"
-                  >
-                    ×
-                  </button>
-                </span>
-              )}
-              {params.location && (
-                <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-accent-100 text-accent-800">
-                  Location: {params.location}
-                  <button
-                    type="button"
-                    onClick={() => updateParams({ location: '' })}
-                    className="ml-1.5 text-accent-600 hover:text-accent-800"
                   >
                     ×
                   </button>

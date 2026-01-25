@@ -30,14 +30,18 @@ export async function GET(request: NextRequest) {
       ];
     }
     
-    // Category filter (exact match)
+    // Category filter (exact match by category name)
     if (category) {
-      where.category = category;
+      where.category = {
+        name: category,
+      };
     }
     
-    // Location filter (exact match)
+    // Location filter (exact match by location name)
     if (location) {
-      where.location = location;
+      where.location = {
+        name: location,
+      };
     }
     
     // Execute query with pagination
@@ -48,8 +52,16 @@ export async function GET(request: NextRequest) {
           id: true,
           title: true,
           description: true,
-          category: true,
-          location: true,
+          category: {
+            select: {
+              name: true,
+            },
+          },
+          location: {
+            select: {
+              name: true,
+            },
+          },
           status: true,
           imageUrls: true,
           createdAt: true,
@@ -64,13 +76,20 @@ export async function GET(request: NextRequest) {
       prisma.item.count({ where }),
     ]);
     
+    // Transform items to flatten category and location
+    const transformedItems = items.map((item: any) => ({
+      ...item,
+      category: item.category?.name || null,
+      location: item.location?.name || null,
+    }));
+    
     // Calculate pagination metadata
     const totalPages = Math.ceil(totalCount / validatedPageSize);
     const hasNextPage = validatedPage < totalPages;
     const hasPreviousPage = validatedPage > 1;
     
     return NextResponse.json({
-      items,
+      items: transformedItems,
       pagination: {
         page: validatedPage,
         pageSize: validatedPageSize,
