@@ -55,7 +55,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto">
+    <div className="max-w-lg mx-auto">
       <h1 className="text-3xl font-bold text-gray-900 mb-6">Register</h1>
       <div className="bg-white p-6 rounded-lg shadow-md">
         <form onSubmit={handleSubmit}>
