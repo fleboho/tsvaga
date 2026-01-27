@@ -186,12 +186,20 @@ export default function AlertsPage() {
           </p>
         </div>
         
-        <button
-          onClick={() => setShowCreateForm(true)}
-          className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-        >
-          Create New Alert
-        </button>
+        <div className="flex gap-3">
+          <a
+            href="/search/advanced"
+            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+          >
+            Advanced Search
+          </a>
+          <button
+            onClick={() => setShowCreateForm(true)}
+            className="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+          >
+            Create New Alert
+          </button>
+        </div>
       </div>
 
       {error && (

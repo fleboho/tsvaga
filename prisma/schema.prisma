@@ -38,6 +38,7 @@ model Item {
   documentYear   String?
   issuingAuthority String?
   holderName     String?
+  color         String?
 }
 
 model DeletedItem {

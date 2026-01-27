@@ -35,13 +35,21 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 <h2 className="text-2xl font-bold text-gray-900">Refine Your Search</h2>
                 <p className="text-gray-600 mt-1">Use the filters below to find specific items</p>
               </div>
-              <div className="hidden md:block">
-                <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>Tip: Combine filters for better results</span>
+              <div className="flex items-center space-x-4">
+                <div className="hidden md:block">
+                  <div className="flex items-center space-x-2 text-sm text-gray-500">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Tip: Combine filters for better results</span>
+                  </div>
                 </div>
+                <a
+                  href="/search/advanced"
+                  className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                >
+                  Advanced Search
+                </a>
               </div>
             </div>
             
