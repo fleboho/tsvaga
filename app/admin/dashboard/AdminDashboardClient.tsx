@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
+import { getDisplayNameFromEmail } from '@/lib/utils';
 
 interface RecentItem {
   id: string;
@@ -70,7 +71,7 @@ export default function AdminDashboardClient({
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Dashboard</h1>
         <p className="text-gray-600">
-          Welcome, Admin {session.user.email}. Here's an overview of the platform.
+          Welcome, Admin {getDisplayNameFromEmail(session.user.email)}. Here's an overview of the platform.
         </p>
       </div>
 

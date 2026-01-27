@@ -4,6 +4,7 @@
 import { useSession, signOut } from "next-auth/react"
 import Link from "next/link"
 import { useState } from "react"
+import { getDisplayNameFromEmail } from "@/lib/utils"
 
 export default function Navbar() {
   const { data: session, status } = useSession()
@@ -62,7 +63,7 @@ export default function Navbar() {
                     </span>
                   </div>
                   <div className="hidden lg:block">
-                    <p className="text-sm font-medium text-gray-900">{session.user.email}</p>
+                    <p className="text-sm font-medium text-gray-900">{getDisplayNameFromEmail(session.user.email)}</p>
                     <p className="text-xs text-gray-500 capitalize">{session.user.role.toLowerCase()}</p>
                   </div>
                 </div>
@@ -136,7 +137,7 @@ export default function Navbar() {
                 ) : session ? (
                   <div className="space-y-3">
                     <div className="px-3 py-2">
-                      <p className="text-sm font-medium text-gray-900">{session.user.email}</p>
+                      <p className="text-sm font-medium text-gray-900">{getDisplayNameFromEmail(session.user.email)}</p>
                       <p className="text-xs text-gray-500 capitalize">{session.user.role.toLowerCase()}</p>
                     </div>
                     <button

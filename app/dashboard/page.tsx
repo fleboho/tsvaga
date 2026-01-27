@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
+import { getDisplayNameFromEmail } from "@/lib/utils"
 
 export default function DashboardPage() {
   const { data: session, status } = useSession()
@@ -75,7 +76,7 @@ export default function DashboardPage() {
     <div className="max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
       <p className="text-gray-600 mb-6">
-        Welcome back, {session.user.email}! You are logged in as a {session.user.role}.
+        Welcome back, {getDisplayNameFromEmail(session.user.email)}! You are logged in as a {session.user.role}.
       </p>
       
       <div className="bg-white p-6 rounded-lg shadow-md mb-6">
@@ -85,6 +86,9 @@ export default function DashboardPage() {
             <h3 className="font-medium text-gray-800 mb-2">User Information</h3>
             <p className="text-gray-600 text-sm">
               <span className="font-medium">Email:</span> {session.user.email}
+            </p>
+            <p className="text-gray-600 text-sm">
+              <span className="font-medium">Display Name:</span> {getDisplayNameFromEmail(session.user.email)}
             </p>
             <p className="text-gray-600 text-sm">
               <span className="font-medium">Role:</span> {session.user.role}

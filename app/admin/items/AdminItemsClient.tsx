@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { getDisplayNameFromEmail } from '@/lib/utils';
 
 interface Item {
   id: string;
@@ -333,7 +334,7 @@ export default function AdminItemsClient() {
     <div className="max-w-6xl mx-auto">
       <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Panel - Found Items</h1>
       <p className="text-gray-600 mb-6">
-        Welcome, Admin {session.user.email}. Manage all found items here.
+        Welcome, Admin {getDisplayNameFromEmail(session.user.email)}. Manage all found items here.
       </p>
       
       {error && (
