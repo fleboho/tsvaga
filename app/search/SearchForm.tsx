@@ -51,6 +51,7 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
     
     if (params.q) queryParams.set('q', params.q);
     if (params.category && params.category !== 'all') queryParams.set('category', params.category);
+    if (params.location) queryParams.set('location', params.location);
     if (params.page && params.page !== '1') queryParams.set('page', params.page);
     if (params.pageSize && params.pageSize !== '20') queryParams.set('pageSize', params.pageSize);
     
@@ -59,14 +60,14 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
   };
 
   const handleReset = () => {
-    updateParams({ q: '', category: 'all' });
+    updateParams({ q: '', category: 'all', location: '' });
     router.push('/search');
   };
 
   if (compact) {
     return (
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           {/* Search Input */}
           <div className="md:col-span-2">
             <input
@@ -97,6 +98,18 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
               placeholder="All Categories"
             />
           </div>
+
+          {/* Location Input */}
+          <div>
+            <input
+              type="text"
+              id="location"
+              value={params.location || ''}
+              onChange={(e) => updateParams({ location: e.target.value })}
+              placeholder="Location"
+              className="input-field"
+            />
+          </div>
         </div>
 
         <div className="flex justify-end">
@@ -113,7 +126,7 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Search Input */}
         <div>
           <label htmlFor="q" className="block text-sm font-medium text-gray-700 mb-2">
@@ -150,6 +163,21 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
             placeholder="All Categories"
           />
         </div>
+
+        {/* Location Input */}
+        <div>
+          <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+            Location
+          </label>
+          <input
+            type="text"
+            id="location"
+            value={params.location || ''}
+            onChange={(e) => updateParams({ location: e.target.value })}
+            placeholder="e.g., Main Street, Park..."
+            className="input-field"
+          />
+        </div>
       </div>
 
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -176,7 +204,7 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
       </div>
 
       {/* Active filters display */}
-      {(params.q || params.category) && (
+      {(params.q || params.category || params.location) && (
         <div className="pt-6 border-t border-gray-200">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <span className="text-sm font-medium text-gray-700">Active filters:</span>
@@ -200,6 +228,18 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
                     type="button"
                     onClick={() => updateParams({ category: 'all' })}
                     className="ml-1.5 text-secondary-600 hover:text-secondary-800"
+                  >
+                    ×
+                  </button>
+                </span>
+              )}
+              {params.location && (
+                <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-accent-100 text-accent-800">
+                  Location: {params.location}
+                  <button
+                    type="button"
+                    onClick={() => updateParams({ location: '' })}
+                    className="ml-1.5 text-accent-600 hover:text-accent-800"
                   >
                     ×
                   </button>

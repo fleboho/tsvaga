@@ -92,21 +92,14 @@ export default function HomeSearchForm() {
           />
         </div>
 
-        {/* Location Select */}
+        {/* Location Input */}
         <div>
-          <Select
+          <input
+            type="text"
             value={location}
-            onChange={setLocation}
-            options={[
-              { value: 'all', label: 'All Locations' },
-              ...filterOptions.locations.map((loc) => ({
-                value: loc,
-                label: loc,
-              })),
-            ]}
-            disabled={isLoading}
-            loading={isLoading}
-            placeholder="All Locations"
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="Location (e.g., Main Street, Park...)"
+            className="input-field"
           />
         </div>
       </div>

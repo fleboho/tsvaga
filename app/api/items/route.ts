@@ -37,10 +37,13 @@ export async function GET(request: NextRequest) {
       };
     }
     
-    // Location filter (exact match by location name)
+    // Location filter (case-insensitive contains search on location name)
     if (location) {
       where.location = {
-        name: location,
+        name: {
+          contains: location,
+          mode: 'insensitive',
+        },
       };
     }
     
