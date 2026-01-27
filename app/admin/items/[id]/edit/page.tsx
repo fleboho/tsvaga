@@ -23,6 +23,16 @@ export default async function EditItemPage({ params }: EditItemPageProps) {
           role: true,
         },
       },
+      category: {
+        select: {
+          name: true,
+        },
+      },
+      location: {
+        select: {
+          name: true,
+        },
+      },
     },
   });
   
@@ -33,6 +43,8 @@ export default async function EditItemPage({ params }: EditItemPageProps) {
   // Convert Date objects to strings for client component
   const itemForClient = {
     ...item,
+    category: item.category?.name || null,
+    location: item.location?.name || null,
     createdAt: item.createdAt.toISOString(),
     updatedAt: item.updatedAt.toISOString(),
   };

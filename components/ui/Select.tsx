@@ -80,26 +80,24 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
               sideOffset={4}
             >
               <SelectPrimitive.Viewport className="p-1">
-                {options
-                  .filter((option) => option.value !== '') // Filter out empty string values
-                  .map((option) => (
-                    <SelectPrimitive.Item
-                      key={option.value}
-                      value={option.value}
-                      className={cn(
-                        "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none",
-                        "focus:bg-primary-50 focus:text-primary-900",
-                        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-                      )}
-                    >
-                      <SelectPrimitive.ItemText>
-                        {option.label}
-                      </SelectPrimitive.ItemText>
-                      <SelectPrimitive.ItemIndicator className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-                        <div className="h-2 w-2 rounded-full bg-primary-600" />
-                      </SelectPrimitive.ItemIndicator>
-                    </SelectPrimitive.Item>
-                  ))}
+                {options.map((option, index) => (
+                  <SelectPrimitive.Item
+                    key={`${option.value}-${option.label}-${index}`}
+                    value={option.value}
+                    className={cn(
+                      "relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none",
+                      "focus:bg-primary-50 focus:text-primary-900",
+                      "data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                    )}
+                  >
+                    <SelectPrimitive.ItemText>
+                      {option.label}
+                    </SelectPrimitive.ItemText>
+                    <SelectPrimitive.ItemIndicator className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+                      <div className="h-2 w-2 rounded-full bg-primary-600" />
+                    </SelectPrimitive.ItemIndicator>
+                  </SelectPrimitive.Item>
+                ))}
               </SelectPrimitive.Viewport>
             </SelectPrimitive.Content>
           </SelectPrimitive.Portal>

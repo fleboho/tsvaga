@@ -7,15 +7,15 @@ import path from 'path';
 // DELETE /api/admin/items/[id]/images/[index] - Delete specific image (admin only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; index: string } }
+  { params }: { params: Promise<{ id: string; index: string }> }
 ) {
   // Check if user is admin
   const errorResponse = await checkAdminAccess();
   if (errorResponse) return errorResponse;
   
   try {
-    const itemId = params.id;
-    const index = parseInt(params.index);
+    const { id: itemId, index: indexStr } = await params;
+    const index = parseInt(indexStr);
     
     if (isNaN(index) || index < 0) {
       return NextResponse.json(

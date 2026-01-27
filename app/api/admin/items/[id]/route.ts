@@ -5,14 +5,14 @@ import { prisma } from '@/lib/db';
 // PATCH /api/admin/items/[id] - Update an item (admin only)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Check if user is admin
   const errorResponse = await checkAdminAccess();
   if (errorResponse) return errorResponse;
   
   try {
-    const id = params.id;
+    const { id } = await params;
     const body = await request.json();
     
     // Validate required fields
@@ -101,14 +101,14 @@ export async function PATCH(
 // DELETE /api/admin/items/[id] - Soft delete an item (admin only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Check if user is admin
   const errorResponse = await checkAdminAccess();
   if (errorResponse) return errorResponse;
   
   try {
-    const id = params.id;
+    const { id } = await params;
     
     // Check if item exists
     const existingItem = await prisma.item.findUnique({
@@ -128,8 +128,8 @@ export async function DELETE(
         id: existingItem.id,
         title: existingItem.title,
         description: existingItem.description,
-        category: existingItem.category,
-        location: existingItem.location,
+        category: existingItem.categoryId,
+        location: existingItem.locationId,
         status: existingItem.status,
         createdAt: existingItem.createdAt,
         updatedAt: existingItem.updatedAt,

@@ -50,7 +50,7 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
     const queryParams = new URLSearchParams();
     
     if (params.q) queryParams.set('q', params.q);
-    if (params.category) queryParams.set('category', params.category);
+    if (params.category && params.category !== 'all') queryParams.set('category', params.category);
     if (params.page && params.page !== '1') queryParams.set('page', params.page);
     if (params.pageSize && params.pageSize !== '20') queryParams.set('pageSize', params.pageSize);
     
@@ -59,7 +59,7 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
   };
 
   const handleReset = () => {
-    updateParams({ q: '', category: '' });
+    updateParams({ q: '', category: 'all' });
     router.push('/search');
   };
 
@@ -86,7 +86,7 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
               value={params.category || ''}
               onChange={(value) => updateParams({ category: value })}
               options={[
-                { value: '', label: 'All Categories' },
+                { value: 'all', label: 'All Categories' },
                 ...filterOptions.categories.map((category) => ({
                   value: category,
                   label: category,
@@ -139,7 +139,7 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
             value={params.category || ''}
             onChange={(value) => updateParams({ category: value })}
             options={[
-              { value: '', label: 'All Categories' },
+              { value: 'all', label: 'All Categories' },
               ...filterOptions.categories.map((category) => ({
                 value: category,
                 label: category,
@@ -193,12 +193,12 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
                   </button>
                 </span>
               )}
-              {params.category && (
+              {params.category && params.category !== 'all' && (
                 <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-secondary-100 text-secondary-800">
                   Category: {params.category}
                   <button
                     type="button"
-                    onClick={() => updateParams({ category: '' })}
+                    onClick={() => updateParams({ category: 'all' })}
                     className="ml-1.5 text-secondary-600 hover:text-secondary-800"
                   >
                     ×

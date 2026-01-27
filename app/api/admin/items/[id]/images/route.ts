@@ -7,14 +7,14 @@ import path from 'path';
 // POST /api/admin/items/[id]/images - Add images to existing item (admin only)
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Check if user is admin
   const errorResponse = await checkAdminAccess();
   if (errorResponse) return errorResponse;
   
   try {
-    const itemId = params.id;
+    const { id: itemId } = await params;
     
     // Check if item exists
     const existingItem = await prisma.item.findUnique({

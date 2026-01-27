@@ -5,14 +5,14 @@ import { prisma } from '@/lib/db';
 // POST /api/admin/items/[id]/mark-returned - Mark item as returned (admin only)
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   // Check if user is admin
   const errorResponse = await checkAdminAccess();
   if (errorResponse) return errorResponse;
   
   try {
-    const id = params.id;
+    const { id } = await params;
     
     // Check if item exists
     const existingItem = await prisma.item.findUnique({

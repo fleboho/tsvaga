@@ -91,11 +91,9 @@ export async function POST(request: NextRequest) {
       data: {
         title,
         description,
-        category: category || null,
-        location: location || null,
-        createdBy: {
-          connect: { id: session.user.id },
-        },
+        categoryId: category || null,
+        locationId: location || null,
+        createdById: session.user.id,
         imageUrls: [], // Will be updated after file upload
       },
     });

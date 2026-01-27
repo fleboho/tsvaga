@@ -53,8 +53,8 @@ export default function HomeSearchForm() {
     const queryParams = new URLSearchParams();
     
     if (searchQuery) queryParams.set('q', searchQuery);
-    if (category) queryParams.set('category', category);
-    if (location) queryParams.set('location', location);
+    if (category && category !== 'all') queryParams.set('category', category);
+    if (location && location !== 'all') queryParams.set('location', location);
     
     // Navigate to search page with query params
     router.push(`/search?${queryParams.toString()}`);
@@ -80,7 +80,7 @@ export default function HomeSearchForm() {
             value={category}
             onChange={setCategory}
             options={[
-              { value: '', label: 'All Categories' },
+              { value: 'all', label: 'All Categories' },
               ...filterOptions.categories.map((cat) => ({
                 value: cat,
                 label: cat,
@@ -98,7 +98,7 @@ export default function HomeSearchForm() {
             value={location}
             onChange={setLocation}
             options={[
-              { value: '', label: 'All Locations' },
+              { value: 'all', label: 'All Locations' },
               ...filterOptions.locations.map((loc) => ({
                 value: loc,
                 label: loc,

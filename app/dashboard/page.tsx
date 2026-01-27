@@ -2,11 +2,15 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 
 export default function DashboardPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const [alertCount, setAlertCount] = useState<number | null>(null)
+  const [itemCount, setItemCount] = useState<number | null>(null)
+  const [returnedCount, setReturnedCount] = useState<number | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -14,7 +18,43 @@ export default function DashboardPage() {
     }
   }, [status, router])
 
-  if (status === "loading") {
+  // Fetch dashboard data
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchDashboardData()
+    }
+  }, [status])
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true)
+      
+      // Fetch alert count for the current user
+      const alertsResponse = await fetch('/api/alerts')
+      if (alertsResponse.ok) {
+        const alertsData = await alertsResponse.json()
+        setAlertCount(alertsData.pagination.totalCount)
+      }
+      
+      // Fetch item counts (public endpoint)
+      const itemsResponse = await fetch('/api/items?pageSize=1')
+      if (itemsResponse.ok) {
+        const itemsData = await itemsResponse.json()
+        setItemCount(itemsData.pagination.totalCount)
+      }
+      
+      // Fetch returned items count (would need a separate endpoint or filter)
+      // For now, we'll set it to 0
+      setReturnedCount(0)
+      
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (status === "loading" || loading) {
     return (
       <div className="max-w-6xl mx-auto">
         <div className="bg-white p-6 rounded-lg shadow-md">
@@ -88,23 +128,51 @@ export default function DashboardPage() {
         <h2 className="text-xl font-semibold text-gray-800 mb-4">Platform Overview</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="border border-gray-200 rounded-lg p-4 text-center">
-            <div className="text-3xl font-bold text-primary-600 mb-2">0</div>
+            <div className="text-3xl font-bold text-primary-600 mb-2">
+              {alertCount !== null ? alertCount : (
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+              )}
+            </div>
             <div className="text-gray-700 font-medium">Your Active Alerts</div>
             <p className="text-gray-500 text-sm mt-2">
               Alerts you've created for lost items
             </p>
+            {alertCount !== null && alertCount > 0 && (
+              <button
+                onClick={() => router.push("/alerts")}
+                className="mt-2 text-sm text-primary-600 hover:text-primary-800"
+              >
+                View your alerts →
+              </button>
+            )}
           </div>
           
           <div className="border border-gray-200 rounded-lg p-4 text-center">
-            <div className="text-3xl font-bold text-primary-600 mb-2">0</div>
+            <div className="text-3xl font-bold text-primary-600 mb-2">
+              {itemCount !== null ? itemCount : (
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+              )}
+            </div>
             <div className="text-gray-700 font-medium">Items Found</div>
             <p className="text-gray-500 text-sm mt-2">
               Total items in the system
             </p>
+            {itemCount !== null && itemCount > 0 && (
+              <button
+                onClick={() => router.push("/search")}
+                className="mt-2 text-sm text-primary-600 hover:text-primary-800"
+              >
+                Search items →
+              </button>
+            )}
           </div>
           
           <div className="border border-gray-200 rounded-lg p-4 text-center">
-            <div className="text-3xl font-bold text-primary-600 mb-2">0</div>
+            <div className="text-3xl font-bold text-primary-600 mb-2">
+              {returnedCount !== null ? returnedCount : (
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+              )}
+            </div>
             <div className="text-gray-700 font-medium">Items Returned</div>
             <p className="text-gray-500 text-sm mt-2">
               Successfully returned to owners
@@ -114,7 +182,11 @@ export default function DashboardPage() {
         
         <div className="mt-6 pt-6 border-t border-gray-200">
           <p className="text-gray-500 text-sm">
-            This dashboard will show your alerts, notifications, and platform statistics once the database is populated.
+            {alertCount === null || itemCount === null ? (
+              "Loading dashboard statistics..."
+            ) : (
+              "Your dashboard shows real-time statistics about your alerts and platform activity."
+            )}
           </p>
         </div>
       </div>
