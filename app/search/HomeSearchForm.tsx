@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Select } from '@/components/ui';
 
 interface FilterOptions {
   categories: string[];
@@ -75,36 +76,38 @@ export default function HomeSearchForm() {
 
         {/* Category Select */}
         <div>
-          <select
+          <Select
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="input-field"
+            onChange={setCategory}
+            options={[
+              { value: '', label: 'All Categories' },
+              ...filterOptions.categories.map((cat) => ({
+                value: cat,
+                label: cat,
+              })),
+            ]}
             disabled={isLoading}
-          >
-            <option value="">All Categories</option>
-            {filterOptions.categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
+            loading={isLoading}
+            placeholder="All Categories"
+          />
         </div>
 
         {/* Location Select */}
         <div>
-          <select
+          <Select
             value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="input-field"
+            onChange={setLocation}
+            options={[
+              { value: '', label: 'All Locations' },
+              ...filterOptions.locations.map((loc) => ({
+                value: loc,
+                label: loc,
+              })),
+            ]}
             disabled={isLoading}
-          >
-            <option value="">All Locations</option>
-            {filterOptions.locations.map((loc) => (
-              <option key={loc} value={loc}>
-                {loc}
-              </option>
-            ))}
-          </select>
+            loading={isLoading}
+            placeholder="All Locations"
+          />
         </div>
       </div>
 

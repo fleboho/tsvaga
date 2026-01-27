@@ -414,4 +414,25 @@ export default function CategoriesAdminClient({ initialCategories }: CategoriesA
                         <button
                           onClick={() => handleDelete(category.id)}
                           disabled={isLoading || category._count.items > 0 || category._count.alerts > 0}
-                          className="text-red-
+                          className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        
+        <div className="px-6 py-4 border-t border-gray-200">
+          <p className="text-sm text-gray-500">
+            Total: {categories.length} categories. Inactive categories are hidden from users.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

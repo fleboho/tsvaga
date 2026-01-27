@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useSearchParams } from './SearchParamsContext';
 import { useEffect, useState } from 'react';
+import { Select } from '@/components/ui';
 
 interface FilterOptions {
   categories: string[];
@@ -80,20 +81,21 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
 
           {/* Category Select */}
           <div>
-            <select
+            <Select
               id="category"
               value={params.category || ''}
-              onChange={(e) => updateParams({ category: e.target.value })}
-              className="input-field"
+              onChange={(value) => updateParams({ category: value })}
+              options={[
+                { value: '', label: 'All Categories' },
+                ...filterOptions.categories.map((category) => ({
+                  value: category,
+                  label: category,
+                })),
+              ]}
               disabled={isLoading}
-            >
-              <option value="">All Categories</option>
-              {filterOptions.categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
+              loading={isLoading}
+              placeholder="All Categories"
+            />
           </div>
         </div>
 
@@ -132,20 +134,21 @@ export default function SearchForm({ compact = false }: SearchFormProps) {
           <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
             Category
           </label>
-          <select
+          <Select
             id="category"
             value={params.category || ''}
-            onChange={(e) => updateParams({ category: e.target.value })}
-            className="input-field"
+            onChange={(value) => updateParams({ category: value })}
+            options={[
+              { value: '', label: 'All Categories' },
+              ...filterOptions.categories.map((category) => ({
+                value: category,
+                label: category,
+              })),
+            ]}
             disabled={isLoading}
-          >
-            <option value="">All Categories</option>
-            {filterOptions.categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>
+            loading={isLoading}
+            placeholder="All Categories"
+          />
         </div>
       </div>
 
