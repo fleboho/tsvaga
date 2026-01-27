@@ -11,6 +11,7 @@ interface ItemCardProps {
     status: string;
     imageUrls: string[];
     createdAt: string;
+    isDocument?: boolean;
   };
 }
 

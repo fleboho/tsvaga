@@ -32,7 +32,8 @@ export async function GET(
         imageUrls: true,
         createdAt: true,
         updatedAt: true,
-        // Don't include createdBy for public endpoint
+        isDocument: true, // Include isDocument flag but not PII fields
+        // Don't include createdBy or PII document fields for public endpoint
       },
     });
     

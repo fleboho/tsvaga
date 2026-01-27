@@ -13,10 +13,6 @@ export async function PATCH(
   
   try {
     const { id } = await params;
-    const body = await request.json();
-    
-    // Validate required fields
-    const { title, description, category, location } = body;
     
     // Check if item exists
     const existingItem = await prisma.item.findUnique({
@@ -29,6 +25,22 @@ export async function PATCH(
         { status: 404 }
       );
     }
+    
+    // Parse multipart form data
+    const formData = await request.formData();
+    
+    // Extract fields
+    const title = formData.get('title') as string;
+    const description = formData.get('description') as string;
+    const category = formData.get('category') as string;
+    const location = formData.get('location') as string;
+    
+    // Extract document fields
+    const isDocument = formData.get('isDocument') === 'true' || formData.get('isDocument') === 'on';
+    const documentNumber = formData.get('documentNumber') as string;
+    const documentYear = formData.get('documentYear') as string;
+    const issuingAuthority = formData.get('issuingAuthority') as string;
+    const holderName = formData.get('holderName') as string;
     
     // Build update data
     const updateData: any = {};
@@ -54,12 +66,19 @@ export async function PATCH(
     }
     
     if (category !== undefined) {
-      updateData.category = category === '' ? null : category.trim();
+      updateData.categoryId = category === '' ? null : category.trim();
     }
     
     if (location !== undefined) {
-      updateData.location = location === '' ? null : location.trim();
+      updateData.locationId = location === '' ? null : location.trim();
     }
+    
+    // Document fields
+    updateData.isDocument = isDocument;
+    updateData.documentNumber = documentNumber || null;
+    updateData.documentYear = documentYear || null;
+    updateData.issuingAuthority = issuingAuthority || null;
+    updateData.holderName = holderName || null;
     
     // Update item
     const updatedItem = await prisma.item.update({
@@ -134,6 +153,11 @@ export async function DELETE(
         createdAt: existingItem.createdAt,
         updatedAt: existingItem.updatedAt,
         createdById: existingItem.createdById,
+        isDocument: existingItem.isDocument,
+        documentNumber: existingItem.documentNumber,
+        documentYear: existingItem.documentYear,
+        issuingAuthority: existingItem.issuingAuthority,
+        holderName: existingItem.holderName,
       },
     });
     

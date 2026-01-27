@@ -18,6 +18,11 @@ interface Item {
     email: string;
     role: string;
   } | null;
+  isDocument: boolean;
+  documentNumber: string | null;
+  documentYear: string | null;
+  issuingAuthority: string | null;
+  holderName: string | null;
 }
 
 interface EditItemClientProps {
@@ -33,6 +38,11 @@ export default function EditItemClient({ item }: EditItemClientProps) {
     description: item.description,
     category: item.category || '',
     location: item.location || '',
+    isDocument: item.isDocument || false,
+    documentNumber: item.documentNumber || '',
+    documentYear: item.documentYear || '',
+    issuingAuthority: item.issuingAuthority || '',
+    holderName: item.holderName || '',
   });
   
   const [existingImages, setExistingImages] = useState<string[]>(item.imageUrls || []);
@@ -55,6 +65,11 @@ export default function EditItemClient({ item }: EditItemClientProps) {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: checked }));
   };
 
   const handleNewImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -134,6 +149,11 @@ export default function EditItemClient({ item }: EditItemClientProps) {
       formDataToSend.append('description', formData.description);
       formDataToSend.append('category', formData.category);
       formDataToSend.append('location', formData.location);
+      formDataToSend.append('isDocument', formData.isDocument.toString());
+      formDataToSend.append('documentNumber', formData.documentNumber);
+      formDataToSend.append('documentYear', formData.documentYear);
+      formDataToSend.append('issuingAuthority', formData.issuingAuthority);
+      formDataToSend.append('holderName', formData.holderName);
       
       // Append images to delete
       imagesToDelete.forEach(url => {
@@ -391,6 +411,90 @@ export default function EditItemClient({ item }: EditItemClientProps) {
                     disabled={loading}
                   />
                 </div>
+              </div>
+              
+              {/* Document Fields */}
+              <div className="border-t border-gray-200 pt-6">
+                <div className="flex items-center mb-4">
+                  <input
+                    type="checkbox"
+                    id="isDocument"
+                    name="isDocument"
+                    checked={formData.isDocument}
+                    onChange={handleCheckboxChange}
+                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                    disabled={loading}
+                  />
+                  <label htmlFor="isDocument" className="ml-2 block text-gray-700 text-sm font-medium">
+                    This is a document (ID, Passport, License, etc.)
+                  </label>
+                </div>
+                
+                {formData.isDocument && (
+                  <div className="space-y-4 bg-gray-50 p-4 rounded-md">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-gray-700 text-sm font-medium mb-1">
+                          Document Number
+                        </label>
+                        <input
+                          type="text"
+                          name="documentNumber"
+                          value={formData.documentNumber}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          placeholder="e.g., Passport number, ID number"
+                          disabled={loading}
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-gray-700 text-sm font-medium mb-1">
+                          Year Issued
+                        </label>
+                        <input
+                          type="text"
+                          name="documentYear"
+                          value={formData.documentYear}
+                          onChange={handleInputChange}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                          placeholder="e.g., 2023"
+                          disabled={loading}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-gray-700 text-sm font-medium mb-1">
+                        Issuing Authority
+                      </label>
+                      <input
+                        type="text"
+                        name="issuingAuthority"
+                        value={formData.issuingAuthority}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        placeholder="e.g., USA, Zimbabwe, University of XYZ"
+                        disabled={loading}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-gray-700 text-sm font-medium mb-1">
+                        Holder Name
+                      </label>
+                      <input
+                        type="text"
+                        name="holderName"
+                        value={formData.holderName}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        placeholder="Name on the document"
+                        disabled={loading}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
             

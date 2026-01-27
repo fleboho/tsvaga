@@ -49,6 +49,13 @@ export async function POST(request: NextRequest) {
     const category = formData.get('category') as string;
     const location = formData.get('location') as string;
     
+    // Extract document fields
+    const isDocument = formData.get('isDocument') === 'true' || formData.get('isDocument') === 'on';
+    const documentNumber = formData.get('documentNumber') as string;
+    const documentYear = formData.get('documentYear') as string;
+    const issuingAuthority = formData.get('issuingAuthority') as string;
+    const holderName = formData.get('holderName') as string;
+    
     // Get image files
     const imageFiles: File[] = [];
     for (let i = 0; i < 3; i++) {
@@ -95,6 +102,11 @@ export async function POST(request: NextRequest) {
         locationId: location || null,
         createdById: session.user.id,
         imageUrls: [], // Will be updated after file upload
+        isDocument,
+        documentNumber: documentNumber || null,
+        documentYear: documentYear || null,
+        issuingAuthority: issuingAuthority || null,
+        holderName: holderName || null,
       },
     });
     

@@ -22,11 +22,25 @@ export async function GET(request: NextRequest) {
       status: 'AVAILABLE', // Only show available items
     };
     
-    // Search query (case-insensitive search on title and description)
+    // Search query (case-insensitive search on title, description, and document fields)
     if (q) {
       where.OR = [
         { title: { contains: q, mode: 'insensitive' } },
         { description: { contains: q, mode: 'insensitive' } },
+        // Search document fields when isDocument is true
+        {
+          AND: [
+            { isDocument: true },
+            {
+              OR: [
+                { documentNumber: { contains: q, mode: 'insensitive' } },
+                { documentYear: { contains: q, mode: 'insensitive' } },
+                { issuingAuthority: { contains: q, mode: 'insensitive' } },
+                { holderName: { contains: q, mode: 'insensitive' } },
+              ],
+            },
+          ],
+        },
       ];
     }
     
@@ -68,7 +82,8 @@ export async function GET(request: NextRequest) {
           status: true,
           imageUrls: true,
           createdAt: true,
-          // Don't include createdBy for public endpoint
+          isDocument: true, // Include isDocument flag but not PII fields
+          // Don't include createdBy or PII document fields for public endpoint
         },
         orderBy: {
           createdAt: 'desc',

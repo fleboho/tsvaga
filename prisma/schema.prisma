@@ -33,6 +33,11 @@ model Item {
   updatedAt     DateTime   @updatedAt
   createdBy     User?      @relation("UserItems", fields: [createdById], references: [id])
   createdById   String?
+  isDocument    Boolean    @default(false)
+  documentNumber String?
+  documentYear   String?
+  issuingAuthority String?
+  holderName     String?
 }
 
 model DeletedItem {
@@ -47,6 +52,11 @@ model DeletedItem {
   updatedAt     DateTime
   deletedAt     DateTime   @default(now())
   createdById   String?
+  isDocument    Boolean    @default(false)
+  documentNumber String?
+  documentYear   String?
+  issuingAuthority String?
+  holderName     String?
   // Note: We don't need relation since original user might be deleted
 }
 

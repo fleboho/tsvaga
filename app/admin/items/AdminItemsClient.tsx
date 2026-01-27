@@ -32,6 +32,11 @@ export default function AdminItemsClient() {
     description: '',
     category: '',
     location: '',
+    isDocument: false,
+    documentNumber: '',
+    documentYear: '',
+    issuingAuthority: '',
+    holderName: '',
   });
   
   const [images, setImages] = useState<File[]>([]);
@@ -164,6 +169,11 @@ export default function AdminItemsClient() {
       formData.append('description', newItem.description);
       formData.append('category', newItem.category);
       formData.append('location', newItem.location);
+      formData.append('isDocument', newItem.isDocument.toString());
+      formData.append('documentNumber', newItem.documentNumber);
+      formData.append('documentYear', newItem.documentYear);
+      formData.append('issuingAuthority', newItem.issuingAuthority);
+      formData.append('holderName', newItem.holderName);
       
       // Append images
       images.forEach((file, index) => {
@@ -198,6 +208,11 @@ export default function AdminItemsClient() {
         description: '',
         category: '',
         location: '',
+        isDocument: false,
+        documentNumber: '',
+        documentYear: '',
+        issuingAuthority: '',
+        holderName: '',
       });
       setImages([]);
       setImagePreviews([]);
@@ -583,6 +598,85 @@ export default function AdminItemsClient() {
                         disabled={creating}
                       />
                     </div>
+                  </div>
+                  
+                  {/* Document Fields */}
+                  <div className="border-t border-gray-200 pt-6">
+                    <div className="flex items-center mb-4">
+                      <input
+                        type="checkbox"
+                        id="isDocument"
+                        checked={newItem.isDocument}
+                        onChange={(e) => setNewItem({...newItem, isDocument: e.target.checked})}
+                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                        disabled={creating}
+                      />
+                      <label htmlFor="isDocument" className="ml-2 block text-gray-700 text-sm font-medium">
+                        This is a document (ID, Passport, License, etc.)
+                      </label>
+                    </div>
+                    
+                    {newItem.isDocument && (
+                      <div className="space-y-4 bg-gray-50 p-4 rounded-md">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-gray-700 text-sm font-medium mb-1">
+                              Document Number
+                            </label>
+                            <input
+                              type="text"
+                              value={newItem.documentNumber}
+                              onChange={(e) => setNewItem({...newItem, documentNumber: e.target.value})}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              placeholder="e.g., Passport number, ID number"
+                              disabled={creating}
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-gray-700 text-sm font-medium mb-1">
+                              Year Issued
+                            </label>
+                            <input
+                              type="text"
+                              value={newItem.documentYear}
+                              onChange={(e) => setNewItem({...newItem, documentYear: e.target.value})}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              placeholder="e.g., 2023"
+                              disabled={creating}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <label className="block text-gray-700 text-sm font-medium mb-1">
+                            Issuing Authority
+                          </label>
+                          <input
+                            type="text"
+                            value={newItem.issuingAuthority}
+                            onChange={(e) => setNewItem({...newItem, issuingAuthority: e.target.value})}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            placeholder="e.g., USA, Zimbabwe, University of XYZ"
+                            disabled={creating}
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-gray-700 text-sm font-medium mb-1">
+                            Holder Name
+                          </label>
+                          <input
+                            type="text"
+                            value={newItem.holderName}
+                            onChange={(e) => setNewItem({...newItem, holderName: e.target.value})}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                            placeholder="Name on the document"
+                            disabled={creating}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                   
                   {/* Image Upload */}

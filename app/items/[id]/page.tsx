@@ -12,6 +12,7 @@ interface Item {
   imageUrls: string[];
   createdAt: string;
   updatedAt: string;
+  isDocument?: boolean;
 }
 
 async function getItem(id: string): Promise<Item | null> {
