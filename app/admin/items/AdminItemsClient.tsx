@@ -37,6 +37,13 @@ export default function AdminItemsClient() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [creating, setCreating] = useState(false);
 
+  // Modal state
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredItems, setFilteredItems] = useState<Item[]>([]);
+
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
@@ -46,6 +53,24 @@ export default function AdminItemsClient() {
       fetchItems();
     }
   }, [status, session, router]);
+
+  // Filter items based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredItems(items);
+    } else {
+      const query = searchQuery.toLowerCase();
+      const filtered = items.filter(item => 
+        item.title.toLowerCase().includes(query) ||
+        item.description.toLowerCase().includes(query) ||
+        (item.category && item.category.toLowerCase().includes(query)) ||
+        (item.location && item.location.toLowerCase().includes(query)) ||
+        item.status.toLowerCase().includes(query) ||
+        (item.createdBy?.email && item.createdBy.email.toLowerCase().includes(query))
+      );
+      setFilteredItems(filtered);
+    }
+  }, [items, searchQuery]);
 
   const fetchItems = async () => {
     try {
@@ -166,7 +191,7 @@ export default function AdminItemsClient() {
       // Add new item to list
       setItems([data.item, ...items]);
       
-      // Reset form
+      // Reset form and close modal
       setNewItem({
         title: '',
         description: '',
@@ -175,6 +200,7 @@ export default function AdminItemsClient() {
       });
       setImages([]);
       setImagePreviews([]);
+      setIsCreateModalOpen(false);
       
       alert('Item created successfully!');
     } catch (err) {
@@ -316,253 +342,343 @@ export default function AdminItemsClient() {
         </div>
       )}
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Create Item Form */}
-        <div className="lg:col-span-1">
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Add New Found Item</h2>
-            
-            <form onSubmit={handleCreateItem}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-gray-700 text-sm font-medium mb-1">
-                    Title *
-                  </label>
-                  <input
-                    type="text"
-                    value={newItem.title}
-                    onChange={(e) => setNewItem({...newItem, title: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    required
-                    disabled={creating}
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-gray-700 text-sm font-medium mb-1">
-                    Description *
-                  </label>
-                  <textarea
-                    value={newItem.description}
-                    onChange={(e) => setNewItem({...newItem, description: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    rows={3}
-                    required
-                    disabled={creating}
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-gray-700 text-sm font-medium mb-1">
-                    Category
-                  </label>
-                  <input
-                    type="text"
-                    value={newItem.category}
-                    onChange={(e) => setNewItem({...newItem, category: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="e.g., Wallet, Electronics, Keys"
-                    disabled={creating}
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-gray-700 text-sm font-medium mb-1">
-                    Location Found
-                  </label>
-                  <input
-                    type="text"
-                    value={newItem.location}
-                    onChange={(e) => setNewItem({...newItem, location: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="e.g., Main Building Lobby"
-                    disabled={creating}
-                  />
-                </div>
-                
-                {/* Image Upload */}
-                <div>
-                  <label className="block text-gray-700 text-sm font-medium mb-1">
-                    Images (Max 3)
-                  </label>
-                  <div className="space-y-4">
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                      <input
-                        type="file"
-                        id="image-upload"
-                        multiple
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="hidden"
-                        disabled={creating || images.length >= 3}
-                      />
-                      <label
-                        htmlFor="image-upload"
-                        className={`cursor-pointer block ${creating || images.length >= 3 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      >
-                        <div className="flex flex-col items-center justify-center">
-                          <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                          </svg>
-                          <span className="text-gray-600 text-sm">
-                            {images.length >= 3 
-                              ? 'Maximum 3 images reached' 
-                              : 'Click to upload images (JPEG, PNG, WebP, max 4MB each)'}
-                          </span>
-                          <span className="text-gray-500 text-xs mt-1">
-                            {images.length} of 3 images selected
-                          </span>
-                        </div>
-                      </label>
-                    </div>
-                    
-                    {/* Image Previews */}
-                    {imagePreviews.length > 0 && (
-                      <div className="grid grid-cols-3 gap-2">
-                        {imagePreviews.map((preview, index) => (
-                          <div key={index} className="relative">
-                            <img
-                              src={preview}
-                              alt={`Preview ${index + 1}`}
-                              className="w-full h-24 object-cover rounded-md"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeImage(index)}
-                              className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                              disabled={creating}
-                            >
-                              ×
-                            </button>
-                            <div className="text-xs text-gray-500 truncate mt-1">
-                              {images[index]?.name || `Image ${index + 1}`}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                <button
-                  type="submit"
-                  disabled={creating}
-                  className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
-                >
-                  {creating ? 'Creating...' : 'Add Found Item'}
-                </button>
-              </div>
-            </form>
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+          >
+            + Add New Found Item
+          </button>
+        </div>
+        
+        <div className="relative w-full sm:w-64">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            placeholder="Search items..."
+          />
+        </div>
+      </div>
+      
+      {/* Items List */}
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold text-gray-800">All Found Items</h2>
+          <div className="flex items-center space-x-4">
+            <span className="text-sm text-gray-500">
+              Showing {filteredItems.length} of {items.length} items
+            </span>
+            <button
+              onClick={fetchItems}
+              className="text-primary-600 hover:text-primary-700 font-medium"
+            >
+              Refresh
+            </button>
           </div>
         </div>
         
-        {/* Items List */}
-        <div className="lg:col-span-2">
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-800">All Found Items</h2>
-              <button
-                onClick={fetchItems}
-                className="text-primary-600 hover:text-primary-700 font-medium"
-              >
-                Refresh
-              </button>
-            </div>
-            
-            {items.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-gray-500">No found items yet. Add your first item using the form.</p>
+        {filteredItems.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500">
+              {searchQuery ? 'No items match your search.' : 'No found items yet. Add your first item using the button above.'}
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead>
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Item
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Category
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Location
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Added By
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filteredItems.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      <div>
+                        <div className="font-medium text-gray-900">{item.title}</div>
+                        <div className="text-sm text-gray-500 truncate max-w-xs">
+                          {item.description}
+                        </div>
+                        <div className="mt-2 flex space-x-2">
+                          <button
+                            onClick={() => handleEditItem(item.id)}
+                            className="text-xs text-primary-600 hover:text-primary-800"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteItem(item.id)}
+                            className="text-xs text-red-600 hover:text-red-800"
+                          >
+                            Delete
+                          </button>
+                          {item.status === 'AVAILABLE' && (
+                            <button
+                              onClick={() => handleMarkReturned(item.id)}
+                              className="text-xs text-green-600 hover:text-green-800"
+                            >
+                              Mark Returned
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {item.category || 'Uncategorized'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-500">
+                      {item.location || 'Unknown'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        item.status === 'AVAILABLE' 
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-500">
+                      {item.createdBy?.email || 'System'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <p className="text-gray-500 text-sm">
+            Total: {items.length} found item(s). Only admins can view and manage this page.
+          </p>
+        </div>
+      </div>
+
+      {/* Create Item Modal */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            {/* Background overlay */}
+            <div 
+              className="fixed inset-0 transition-opacity bg-gray-900 bg-opacity-50 backdrop-blur-sm" 
+              onClick={() => setIsCreateModalOpen(false)}
+              aria-hidden="true"
+            ></div>
+
+            {/* Modal - Even wider version */}
+            <div className="relative inline-block align-bottom bg-white rounded-2xl px-6 pt-6 pb-6 text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+              <div className="absolute top-4 right-4">
+                <button
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="text-gray-400 hover:text-gray-500 transition-colors"
+                  disabled={creating}
+                >
+                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead>
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Item
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+
+              <div className="mt-3">
+                <div className="text-center">
+                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-primary-100 mb-4">
+                    <svg className="h-6 w-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    Add New Found Item
+                  </h3>
+                  <p className="text-gray-600 mb-8">
+                    Fill out the form below to add a new found item to the system.
+                  </p>
+                </div>
+
+                <form onSubmit={handleCreateItem} className="space-y-6">
+                  {/* Title - Full width */}
+                  <div>
+                    <label className="block text-gray-700 text-sm font-medium mb-1">
+                      Title *
+                    </label>
+                    <input
+                      type="text"
+                      value={newItem.title}
+                      onChange={(e) => setNewItem({...newItem, title: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      required
+                      disabled={creating}
+                      placeholder="e.g., Black Wallet, iPhone 12, Car Keys"
+                    />
+                  </div>
+                  
+                  {/* Description - Full width */}
+                  <div>
+                    <label className="block text-gray-700 text-sm font-medium mb-1">
+                      Description *
+                    </label>
+                    <textarea
+                      value={newItem.description}
+                      onChange={(e) => setNewItem({...newItem, description: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      rows={3}
+                      required
+                      disabled={creating}
+                      placeholder="Describe the item in detail..."
+                    />
+                  </div>
+                  
+                  {/* Two-column grid for Category and Location */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-gray-700 text-sm font-medium mb-1">
                         Category
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Location
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Added By
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {items.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3">
-                          <div>
-                            <div className="font-medium text-gray-900">{item.title}</div>
-                            <div className="text-sm text-gray-500 truncate max-w-xs">
-                              {item.description}
-                            </div>
-                            <div className="mt-2 flex space-x-2">
-                              <button
-                                onClick={() => handleEditItem(item.id)}
-                                className="text-xs text-primary-600 hover:text-primary-800"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => handleDeleteItem(item.id)}
-                                className="text-xs text-red-600 hover:text-red-800"
-                              >
-                                Delete
-                              </button>
-                              {item.status === 'AVAILABLE' && (
-                                <button
-                                  onClick={() => handleMarkReturned(item.id)}
-                                  className="text-xs text-green-600 hover:text-green-800"
-                                >
-                                  Mark Returned
-                                </button>
-                              )}
-                            </div>
+                      </label>
+                      <input
+                        type="text"
+                        value={newItem.category}
+                        onChange={(e) => setNewItem({...newItem, category: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        placeholder="e.g., Wallet, Electronics, Keys"
+                        disabled={creating}
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-gray-700 text-sm font-medium mb-1">
+                        Location Found
+                      </label>
+                      <input
+                        type="text"
+                        value={newItem.location}
+                        onChange={(e) => setNewItem({...newItem, location: e.target.value})}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        placeholder="e.g., Main Building Lobby, Parking Lot B"
+                        disabled={creating}
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Image Upload */}
+                  <div>
+                    <label className="block text-gray-700 text-sm font-medium mb-1">
+                      Images (Max 3)
+                    </label>
+                    <div className="space-y-4">
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                        <input
+                          type="file"
+                          id="modal-image-upload"
+                          multiple
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="hidden"
+                          disabled={creating || images.length >= 3}
+                        />
+                        <label
+                          htmlFor="modal-image-upload"
+                          className={`cursor-pointer block ${creating || images.length >= 3 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          <div className="flex flex-col items-center justify-center">
+                            <svg className="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span className="text-gray-600 text-sm">
+                              {images.length >= 3 
+                                ? 'Maximum 3 images reached' 
+                                : 'Click to upload images (JPEG, PNG, WebP, max 4MB each)'}
+                            </span>
+                            <span className="text-gray-500 text-xs mt-1">
+                              {images.length} of 3 images selected
+                            </span>
                           </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            {item.category || 'Uncategorized'}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-500">
-                          {item.location || 'Unknown'}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                            item.status === 'AVAILABLE' 
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {item.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-sm text-gray-500">
-                          {item.createdBy?.email || 'System'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        </label>
+                      </div>
+                      
+                      {/* Image Previews */}
+                      {imagePreviews.length > 0 && (
+                        <div className="grid grid-cols-3 gap-2">
+                          {imagePreviews.map((preview, index) => (
+                            <div key={index} className="relative">
+                              <img
+                                src={preview}
+                                alt={`Preview ${index + 1}`}
+                                className="w-full h-24 object-cover rounded-md"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeImage(index)}
+                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
+                                disabled={creating}
+                              >
+                                ×
+                              </button>
+                              <div className="text-xs text-gray-500 truncate mt-1">
+                                {images[index]?.name || `Image ${index + 1}`}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-8 flex justify-end space-x-4">
+                    <button
+                      type="button"
+                      onClick={() => setIsCreateModalOpen(false)}
+                      className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      disabled={creating}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={creating}
+                      className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50"
+                    >
+                      {creating ? (
+                        <span className="flex items-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Creating...
+                        </span>
+                      ) : 'Add Item'}
+                    </button>
+                  </div>
+                </form>
               </div>
-            )}
-            
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <p className="text-gray-500 text-sm">
-                Total: {items.length} found item(s). Only admins can view and manage this page.
-              </p>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
