@@ -19,6 +19,12 @@ type Alert = {
   } | null
   createdAt: string
   updatedAt: string
+  isDocument: boolean
+  documentNumber: string | null
+  documentYear: string | null
+  issuingAuthority: string | null
+  holderName: string | null
+  color: string | null
 }
 
 type AlertResponse = {
@@ -94,7 +100,17 @@ export default function AlertsPage() {
   }, [status])
 
   // Handle alert creation
-  const handleCreateAlert = async (data: { keywords: string; categoryId?: string; location?: string }) => {
+  const handleCreateAlert = async (data: {
+    keywords: string;
+    categoryId?: string;
+    location?: string;
+    isDocument?: boolean;
+    documentNumber?: string;
+    documentYear?: string;
+    issuingAuthority?: string;
+    holderName?: string;
+    color?: string;
+  }) => {
     try {
       const response = await fetch('/api/alerts', {
         method: 'POST',
@@ -115,7 +131,17 @@ export default function AlertsPage() {
   }
 
   // Handle alert update
-  const handleUpdateAlert = async (data: { keywords: string; categoryId?: string; location?: string }) => {
+  const handleUpdateAlert = async (data: {
+    keywords: string;
+    categoryId?: string;
+    location?: string;
+    isDocument?: boolean;
+    documentNumber?: string;
+    documentYear?: string;
+    issuingAuthority?: string;
+    holderName?: string;
+    color?: string;
+  }) => {
     if (!editingAlert) return
 
     try {
@@ -238,6 +264,12 @@ export default function AlertsPage() {
               keywords: editingAlert.keywords,
               categoryId: editingAlert.category?.id,
               location: editingAlert.location?.name,
+              isDocument: editingAlert.isDocument,
+              documentNumber: editingAlert.documentNumber || undefined,
+              documentYear: editingAlert.documentYear || undefined,
+              issuingAuthority: editingAlert.issuingAuthority || undefined,
+              holderName: editingAlert.holderName || undefined,
+              color: editingAlert.color || undefined,
             } : undefined}
             categories={categories}
             loading={false}
@@ -298,6 +330,42 @@ export default function AlertsPage() {
                         </div>
                       )}
                     </div>
+
+                    {/* Document Fields */}
+                    {(alert.isDocument || alert.color) && (
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">Additional Details</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {alert.isDocument && (
+                            <div className="flex items-center">
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mr-2">
+                                Document
+                              </span>
+                              {alert.documentNumber && (
+                                <span className="text-sm text-gray-600">No: {alert.documentNumber}</span>
+                              )}
+                            </div>
+                          )}
+                          {alert.color && (
+                            <div className="flex items-center">
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                Color: {alert.color}
+                              </span>
+                            </div>
+                          )}
+                          {alert.holderName && (
+                            <div className="text-sm text-gray-600">
+                              <span className="font-medium">Holder:</span> {alert.holderName}
+                            </div>
+                          )}
+                          {alert.issuingAuthority && (
+                            <div className="text-sm text-gray-600">
+                              <span className="font-medium">Authority:</span> {alert.issuingAuthority}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
                     
                     <div className="flex items-center text-sm text-gray-500">
                       <span>Created: {new Date(alert.createdAt).toLocaleDateString()}</span>

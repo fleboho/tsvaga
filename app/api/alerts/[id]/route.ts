@@ -27,7 +27,17 @@ export async function PATCH(
       );
     }
     
-    const { keywords, categoryId, location } = validationResult.data;
+    const { 
+      keywords, 
+      categoryId, 
+      location,
+      isDocument,
+      documentNumber,
+      documentYear,
+      issuingAuthority,
+      holderName,
+      color
+    } = validationResult.data;
     
     // Check if alert exists and belongs to the current user
     const existingAlert = await prisma.alert.findUnique({
@@ -99,6 +109,12 @@ export async function PATCH(
     if (keywords !== undefined) updateData.keywords = keywords;
     if (categoryId !== undefined) updateData.categoryId = categoryId || null;
     if (locationIdToUse !== undefined) updateData.locationId = locationIdToUse;
+    if (isDocument !== undefined) updateData.isDocument = isDocument;
+    if (documentNumber !== undefined) updateData.documentNumber = documentNumber || null;
+    if (documentYear !== undefined) updateData.documentYear = documentYear || null;
+    if (issuingAuthority !== undefined) updateData.issuingAuthority = issuingAuthority || null;
+    if (holderName !== undefined) updateData.holderName = holderName || null;
+    if (color !== undefined) updateData.color = color || null;
     
     // Update the alert
     const updatedAlert = await prisma.alert.update({

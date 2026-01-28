@@ -4,11 +4,27 @@ import { useState } from 'react'
 import Select, { SelectOption } from '@/components/ui/Select'
 
 interface AlertFormProps {
-  onSubmit: (data: { keywords: string; categoryId?: string; location?: string }) => void
+  onSubmit: (data: {
+    keywords: string;
+    categoryId?: string;
+    location?: string;
+    isDocument?: boolean;
+    documentNumber?: string;
+    documentYear?: string;
+    issuingAuthority?: string;
+    holderName?: string;
+    color?: string;
+  }) => void
   initialData?: {
     keywords: string
     categoryId?: string
     location?: string
+    isDocument?: boolean
+    documentNumber?: string
+    documentYear?: string
+    issuingAuthority?: string
+    holderName?: string
+    color?: string
   }
   categories: SelectOption[]
   loading?: boolean
@@ -23,6 +39,12 @@ export default function AlertForm({
   const [keywords, setKeywords] = useState(initialData?.keywords || '')
   const [categoryId, setCategoryId] = useState(initialData?.categoryId || '')
   const [location, setLocation] = useState(initialData?.location || '')
+  const [isDocument, setIsDocument] = useState(initialData?.isDocument || false)
+  const [documentNumber, setDocumentNumber] = useState(initialData?.documentNumber || '')
+  const [documentYear, setDocumentYear] = useState(initialData?.documentYear || '')
+  const [issuingAuthority, setIssuingAuthority] = useState(initialData?.issuingAuthority || '')
+  const [holderName, setHolderName] = useState(initialData?.holderName || '')
+  const [color, setColor] = useState(initialData?.color || '')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const validateForm = () => {
@@ -49,6 +71,12 @@ export default function AlertForm({
       keywords: keywords.trim(),
       categoryId: categoryId === 'any' ? undefined : categoryId || undefined,
       location: location.trim() || undefined,
+      isDocument: isDocument || undefined,
+      documentNumber: documentNumber.trim() || undefined,
+      documentYear: documentYear.trim() || undefined,
+      issuingAuthority: issuingAuthority.trim() || undefined,
+      holderName: holderName.trim() || undefined,
+      color: color.trim() || undefined,
     })
   }
 
@@ -56,6 +84,12 @@ export default function AlertForm({
     setKeywords(initialData?.keywords || '')
     setCategoryId(initialData?.categoryId || '')
     setLocation(initialData?.location || '')
+    setIsDocument(initialData?.isDocument || false)
+    setDocumentNumber(initialData?.documentNumber || '')
+    setDocumentYear(initialData?.documentYear || '')
+    setIssuingAuthority(initialData?.issuingAuthority || '')
+    setHolderName(initialData?.holderName || '')
+    setColor(initialData?.color || '')
     setErrors({})
   }
 
@@ -127,6 +161,109 @@ export default function AlertForm({
         </div>
       </div>
 
+      {/* Document Fields Section */}
+      <div className="border-t border-gray-200 pt-6">
+        <div className="flex items-center mb-4">
+          <input
+            type="checkbox"
+            id="isDocument"
+            checked={isDocument}
+            onChange={(e) => setIsDocument(e.target.checked)}
+            className="h-4 w-4 text-primary-600 rounded"
+          />
+          <label htmlFor="isDocument" className="ml-2 text-sm font-medium text-gray-700">
+            This is a document (ID, passport, certificate, etc.)
+          </label>
+        </div>
+
+        {isDocument && (
+          <div className="space-y-4 bg-gray-50 p-4 rounded-md">
+            <h4 className="text-sm font-medium text-gray-700 mb-2">Document Details</h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="documentNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                  Document Number (Optional)
+                </label>
+                <input
+                  type="text"
+                  id="documentNumber"
+                  value={documentNumber}
+                  onChange={(e) => setDocumentNumber(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="e.g., Passport number, ID number"
+                  disabled={loading}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="documentYear" className="block text-sm font-medium text-gray-700 mb-1">
+                  Document Year (Optional)
+                </label>
+                <input
+                  type="text"
+                  id="documentYear"
+                  value={documentYear}
+                  onChange={(e) => setDocumentYear(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="e.g., 2023"
+                  disabled={loading}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="issuingAuthority" className="block text-sm font-medium text-gray-700 mb-1">
+                  Issuing Authority (Optional)
+                </label>
+                <input
+                  type="text"
+                  id="issuingAuthority"
+                  value={issuingAuthority}
+                  onChange={(e) => setIssuingAuthority(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="e.g., Government, University"
+                  disabled={loading}
+                />
+              </div>
+
+              <div>
+                <label htmlFor="holderName" className="block text-sm font-medium text-gray-700 mb-1">
+                  Holder Name (Optional)
+                </label>
+                <input
+                  type="text"
+                  id="holderName"
+                  value={holderName}
+                  onChange={(e) => setHolderName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder="Name on document"
+                  disabled={loading}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Color Field */}
+      <div>
+        <label htmlFor="color" className="block text-sm font-medium text-gray-700 mb-1">
+          Color (Optional)
+        </label>
+        <input
+          type="text"
+          id="color"
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          placeholder="e.g., Black, Red, Blue, Silver"
+          disabled={loading}
+        />
+        <p className="mt-1 text-sm text-gray-500">
+          Specify the color of the item for more precise matching
+        </p>
+      </div>
+
       <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
         <button
           type="button"
@@ -158,6 +295,8 @@ export default function AlertForm({
           <li>• You'll receive email notifications when matching items are found or updated</li>
           <li>• Alerts match case-insensitively against item titles and descriptions</li>
           <li>• If you specify a category/location, items must match exactly</li>
+          <li>• Document fields will be matched against item document details</li>
+          <li>• Color field helps match items by color</li>
           <li>• You can edit or delete alerts at any time</li>
         </ul>
       </div>

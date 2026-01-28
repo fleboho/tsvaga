@@ -73,6 +73,12 @@ model Alert {
   user          User     @relation(fields: [userId], references: [id])
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  isDocument    Boolean  @default(false)
+  documentNumber String?
+  documentYear   String?
+  issuingAuthority String?
+  holderName     String?
+  color         String?
 }
 
 enum Role {

@@ -105,7 +105,17 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const { keywords, categoryId, location } = validationResult.data;
+    const { 
+      keywords, 
+      categoryId, 
+      location,
+      isDocument,
+      documentNumber,
+      documentYear,
+      issuingAuthority,
+      holderName,
+      color
+    } = validationResult.data;
     
     // Check if category exists if provided
     if (categoryId) {
@@ -153,6 +163,12 @@ export async function POST(request: NextRequest) {
         categoryId: categoryId || null,
         locationId: locationIdToUse,
         userId: user.id,
+        isDocument: isDocument || false,
+        documentNumber: documentNumber || null,
+        documentYear: documentYear || null,
+        issuingAuthority: issuingAuthority || null,
+        holderName: holderName || null,
+        color: color || null,
       },
       include: {
         category: {
