@@ -28,62 +28,68 @@ export default function Navbar() {
               <Link href="/search" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 Search Items
               </Link>
-              {session && (
-                <>
-                  <Link href="/dashboard" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                    Dashboard
-                  </Link>
-                  {session.user.role === "ADMIN" && (
-                    <>
-                      <Link href="/admin/dashboard" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                        Admin Dashboard
-                      </Link>
-                      <Link href="/admin/items" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                        Manage Items
-                      </Link>
-                    </>
-                  )}
-                </>
-              )}
               <Link href="/#how-it-works" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 How It Works
               </Link>
             </div>
           </div>
           
-          <div className="hidden md:flex md:items-center md:space-x-4">
-            {status === "loading" ? (
-              <div className="text-gray-500 text-sm">Loading...</div>
-            ) : session ? (
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                    <span className="text-primary-700 text-sm font-medium">
-                      {session.user.email?.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <div className="hidden lg:block">
-                    <p className="text-sm font-medium text-gray-900">{getDisplayNameFromEmail(session.user.email)}</p>
-                    <p className="text-xs text-gray-500 capitalize">{session.user.role.toLowerCase()}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => signOut()}
-                  className="btn-secondary text-sm"
-                >
-                  Sign Out
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-3">
-                <Link href="/login" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                  Login
+          <div className="hidden md:flex md:items-center md:space-x-6">
+            {session && (
+              <div className="flex items-center space-x-6">
+                <Link href="/dashboard" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                  Dashboard
                 </Link>
-                <Link href="/register" className="btn-primary text-sm">
-                  Get Started
+                <Link href="/alerts" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                  Alerts
                 </Link>
+                {session.user.role === "ADMIN" && (
+                  <>
+                    <Link href="/admin/dashboard" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                      Admin Dashboard
+                    </Link>
+                    <Link href="/admin/items" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                      Manage Items
+                    </Link>
+                  </>
+                )}
               </div>
             )}
+            
+            <div className="flex items-center space-x-4">
+              {status === "loading" ? (
+                <div className="text-gray-500 text-sm">Loading...</div>
+              ) : session ? (
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                      <span className="text-primary-700 text-sm font-medium">
+                        {session.user.email?.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="hidden lg:block">
+                      <p className="text-sm font-medium text-gray-900">{getDisplayNameFromEmail(session.user.email)}</p>
+                      <p className="text-xs text-gray-500 capitalize">{session.user.role.toLowerCase()}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => signOut()}
+                    className="btn-secondary text-sm"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-3">
+                  <Link href="/login" className="text-gray-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                    Login
+                  </Link>
+                  <Link href="/register" className="btn-primary text-sm">
+                    Get Started
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
           
           {/* Mobile menu button */}
@@ -110,26 +116,35 @@ export default function Navbar() {
               <Link href="/search" className="block px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
                 Search Items
               </Link>
-              {session && (
-                <>
-                  <Link href="/dashboard" className="block px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
-                    Dashboard
-                  </Link>
-                  {session.user.role === "ADMIN" && (
-                    <>
-                      <Link href="/admin/dashboard" className="block px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
-                        Admin Dashboard
-                      </Link>
-                      <Link href="/admin/items" className="block px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
-                        Manage Items
-                      </Link>
-                    </>
-                  )}
-                </>
-              )}
               <Link href="/#how-it-works" className="block px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
                 How It Works
               </Link>
+              
+              {session && (
+                <>
+                  <div className="pt-4 border-t border-gray-200">
+                    <h3 className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      Your Account
+                    </h3>
+                    <Link href="/dashboard" className="block px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
+                      Dashboard
+                    </Link>
+                    <Link href="/alerts" className="block px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
+                      Alerts
+                    </Link>
+                    {session.user.role === "ADMIN" && (
+                      <>
+                        <Link href="/admin/dashboard" className="block px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
+                          Admin Dashboard
+                        </Link>
+                        <Link href="/admin/items" className="block px-3 py-2 text-gray-700 hover:text-primary-600 hover:bg-gray-50 rounded-md">
+                          Manage Items
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
               
               <div className="pt-4 border-t border-gray-200">
                 {status === "loading" ? (

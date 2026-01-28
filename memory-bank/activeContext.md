@@ -13,7 +13,15 @@
 - Implemented proper ownership checks and validation
 
 ## Recent Changes
-1. **Search Form Location Update** (2025-01-27)
+1. **Navigation Menu Restructuring** (2025-01-28)
+   - Updated `components/Navbar.tsx` to separate public and authenticated navigation items
+   - Public links (Search Items, How It Works) now appear on the left side
+   - Authenticated user links (Dashboard, Alerts, Admin Dashboard, Manage Items) now appear on the right side, to the right of public links
+   - Added "Alerts" link to navigation for authenticated users
+   - Updated mobile menu to match new structure with clear separation between public and authenticated sections
+   - Improved visual hierarchy with "Your Account" section header in mobile menu
+
+2. **Search Form Location Update** (2025-01-27)
    - Updated search forms to use free text input for location instead of dropdown select
    - Modified `/app/search/HomeSearchForm.tsx`: Changed location from Select component to text input
    - Modified `/app/search/SearchForm.tsx`: Added location text input field to both compact and regular versions
@@ -21,7 +29,7 @@
    - Enhanced active filters display to show location filter badge with remove functionality
    - Location field now accepts any text input and searches for partial matches in location names
 
-2. **Admin Items Page Enhancement** (2025-01-27)
+3. **Admin Items Page Enhancement** (2025-01-27)
    - Updated `/app/admin/items/AdminItemsClient.tsx` to convert inline create form into a modal
    - Added search functionality to admin items listing with real-time filtering
    - Implemented modal-based item creation similar to ContactForm component
@@ -152,11 +160,11 @@
 5. **Next.js 16 Params**: Fixed API and page components to handle params as Promise
 
 ## Current Status
-- **Phase**: Admin Items Enhancement Complete, Ready for Testing
-- **Code Written**: 95%
+- **Phase**: Navigation Restructuring Complete
+- **Code Written**: 96%
 - **Database Setup**: 100%
 - **Authentication**: 50% (API endpoints protected, needs full testing)
-- **UI Components**: 98%
+- **UI Components**: 99%
 - **User Features**: 80% complete (alerts CRUD implemented)
 - **Admin Features**: 90% complete (items management enhanced with modal and search)
 - **Public Features**: 100% complete
