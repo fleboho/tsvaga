@@ -31,7 +31,7 @@ export default function Home() {
           <Link href="/search" className="btn-primary px-8 py-3 text-lg">
             Browse All Items
           </Link>
-          <Link href="/register" className="btn-secondary px-8 py-3 text-lg">
+          <Link href="/alerts" className="btn-secondary px-8 py-3 text-lg">
             Create Alert
           </Link>
         </div>
