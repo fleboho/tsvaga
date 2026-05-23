@@ -5,6 +5,10 @@
 /.pnp
 .pnp.js
 
+.yarn/install-state.gz
+
+/.claude
+
 # testing
 /coverage
 
@@ -14,6 +18,9 @@
 
 # production
 /build
+
+# uploads
+/public/uploads/
 
 # misc
 .DS_Store
@@ -34,3 +41,35 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Prisma
+/prisma/migrations
+/prisma/*.db
+/prisma/*.db-journal
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache

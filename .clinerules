@@ -1,0 +1,113 @@
+# Cline Rules — Lost & Found MVP-1
+
+These rules apply to **all tasks** in this project and must be followed strictly.
+
+---
+
+## Project Scope
+
+You are building **MVP-1 ONLY** of a **Lost & Found web application**.
+
+The goal of MVP-1 is limited to:
+- Allowing the public to search and view found items
+- Allowing admins to post and manage found items
+- Allowing registered users to create alerts and receive email notifications (mocked)
+
+Anything not explicitly listed is **out of scope**.
+
+---
+
+## Mandatory Technology Stack
+
+You MUST use the following stack:
+
+- **Framework:** Next.js (App Router)
+- **Backend:** Next.js Route Handlers under `/app/api`
+- **Language:** TypeScript
+- **Database:** PostgreSQL
+- **ORM:** Prisma
+- **Authentication:** Auth.js (NextAuth) — Credentials provider
+- **Email:** Mock only using `console.log`
+
+Do NOT introduce alternative frameworks, ORMs, databases, or auth providers.
+
+---
+
+## User Roles & Permissions
+
+### Public (Unauthenticated)
+- Search items
+- View item details
+
+### Registered User
+- Create, view, update, and delete their own alerts
+- Receive email notifications (mocked)
+
+### Admin
+- Create, edit, and delete found items
+- Mark items as returned
+
+Only **admins** may create or manage found items.
+
+---
+
+## Alert Matching Rules
+
+- Alert matching runs **ONLY when a new item is created**
+- Matching logic:
+  - Case-insensitive keyword containment match against item title and description
+  - If alert category is set, item category must match exactly
+  - If alert location is set, item location must match exactly
+
+---
+
+## Contact Flow Rules
+
+- Item detail page includes a **Contact Admin** form
+- Submitting the form sends a **mock email** to admin via `console.log`
+- No direct user-to-user contact or data sharing
+
+---
+
+## Explicitly Out of Scope (DO NOT IMPLEMENT)
+
+The following features must NOT be implemented under any circumstances:
+
+- SMS notifications
+- WhatsApp notifications
+- Maps or GPS functionality
+- AI features or image comparison
+- User-posted found items
+- Bulk import or export
+- Mobile applications
+- Analytics dashboards
+- Success stories
+- Payments or monetization
+- GDPR compliance workflows
+- Social login providers
+
+If a feature is not explicitly allowed above, it is out of scope.
+
+---
+
+## Development Rules
+
+- Work **incrementally**, one task at a time
+- Do NOT start the next task until the current one is complete and verified
+- Prefer clarity over cleverness
+- Avoid over-engineering
+- Always produce working, testable code
+
+If requirements appear ambiguous, choose the **simplest interpretation** consistent with MVP-1.
+
+---
+
+## Final Instruction
+
+You are building **MVP-1**, not a production platform.
+
+Respect scope boundaries at all times.
+
+All operations are being performed on a Windows machine. Use PowerShell for terminal commands during development.
+
+create a git commit upon request, after a feature completion you should always request to have a git commit created
