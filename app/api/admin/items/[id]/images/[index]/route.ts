@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkAdminAccess } from '@/lib/auth-utils';
 import { prisma } from '@/lib/db';
-import fs from 'fs/promises';
-import path from 'path';
-
 // DELETE /api/admin/items/[id]/images/[index] - Delete specific image (admin only)
 export async function DELETE(
   request: NextRequest,
@@ -47,15 +44,10 @@ export async function DELETE(
     // Get the image URL to delete
     const imageUrlToDelete = existingItem.imageUrls[index];
     
-    // Delete file from filesystem
+    // Delete file from Uploadthing
     if (imageUrlToDelete) {
-      try {
-        const fullPath = path.join(process.cwd(), 'public', imageUrlToDelete);
-        await fs.unlink(fullPath);
-      } catch (error) {
-        // File might not exist, continue anyway
-        console.warn(`Failed to delete file ${imageUrlToDelete}:`, error);
-      }
+      const { deleteFile } = await import('@/lib/file-upload');
+      await deleteFile(imageUrlToDelete);
     }
     
     // Remove image URL from array

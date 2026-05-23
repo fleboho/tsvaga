@@ -1,7 +1,5 @@
 import { NextRequest } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
-import { randomBytes } from 'crypto';
+import { utapi } from './uploadthing';
 
 // Maximum file size: 4MB
 const MAX_FILE_SIZE = 4 * 1024 * 1024; // 4MB in bytes
@@ -18,7 +16,6 @@ const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
 
 // Validate file
 export function validateFile(file: File): { valid: boolean; error?: string } {
-  // Check file size
   if (file.size > MAX_FILE_SIZE) {
     return {
       valid: false,
@@ -26,7 +23,6 @@ export function validateFile(file: File): { valid: boolean; error?: string } {
     };
   }
 
-  // Check MIME type
   if (!ALLOWED_MIME_TYPES.includes(file.type)) {
     return {
       valid: false,
@@ -37,52 +33,72 @@ export function validateFile(file: File): { valid: boolean; error?: string } {
   return { valid: true };
 }
 
-// Generate unique filename
-export function generateFilename(
-  originalName: string,
-  itemId: string,
-  index: number
-): string {
-  const timestamp = Date.now();
-  const random = randomBytes(4).toString('hex');
-  const extension = path.extname(originalName).toLowerCase();
-  
-  // Ensure extension is allowed
-  if (!ALLOWED_EXTENSIONS.includes(extension)) {
-    throw new Error(`Invalid file extension: ${extension}`);
-  }
-  
-  return `item-${itemId}-${timestamp}-${random}${extension}`;
+/**
+ * Upload files to Uploadthing storage.
+ * Returns array of uploaded file URLs (appUrl format).
+ */
+export async function uploadFiles(
+  files: File[]
+): Promise<string[]> {
+  if (files.length === 0) return [];
+
+  const results = await utapi.uploadFiles(files);
+
+  const resultArray = Array.isArray(results) ? results : [results];
+
+  return resultArray.map((result) => {
+    if (result.error) {
+      console.error('Upload failed for file:', result.error.message);
+      throw new Error(`Upload failed: ${result.error.message}`);
+    }
+    // Use ufsUrl which is the persistent CDN URL
+    return result.data.ufsUrl;
+  });
 }
 
-// Save file to disk
-export async function saveFile(
-  file: File,
-  filename: string
-): Promise<string> {
-  const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'items');
-  
-  // Ensure directory exists
-  await fs.mkdir(uploadDir, { recursive: true });
-  
-  const filePath = path.join(uploadDir, filename);
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-  
-  await fs.writeFile(filePath, buffer);
-  
-  // Return relative path for database storage
-  return `/uploads/items/${filename}`;
-}
-
-// Delete file from disk
-export async function deleteFile(filePath: string): Promise<void> {
+/**
+ * Delete a file from Uploadthing by its stored URL.
+ * Extracts the file key from the URL.
+ */
+export async function deleteFile(url: string): Promise<void> {
   try {
-    const fullPath = path.join(process.cwd(), 'public', filePath);
-    await fs.unlink(fullPath);
+    // Extract file key from Uploadthing URL
+    // URLs look like: https://vrhfwet42x.ufs.sh/f/{key}
+    // or: https://ufs.sh/a/vrhfwet42x/{key}
+    const fileKey = extractFileKey(url);
+    if (!fileKey) {
+      console.warn(`Could not extract file key from URL: ${url}`);
+      return;
+    }
+    await utapi.deleteFiles(fileKey);
   } catch (error) {
-    // File might not exist, that's okay
-    console.warn(`Failed to delete file ${filePath}:`, error);
+    console.warn(`Failed to delete file ${url}:`, error);
+  }
+}
+
+/**
+ * Get the file key from an Uploadthing URL.
+ */
+export function extractFileKey(url: string): string | null {
+  try {
+    const urlObj = new URL(url);
+    // Path format: /f/{key}
+    if (urlObj.pathname.startsWith('/f/')) {
+      return urlObj.pathname.split('/f/')[1];
+    }
+    // Subdomain format: {appId}.ufs.sh/f/{key}
+    const parts = urlObj.pathname.split('/');
+    if (parts.length >= 3 && parts[1] === 'f') {
+      return parts.slice(2).join('/');
+    }
+    // Path format: /a/{appId}/{key}
+    if (parts.length >= 4 && parts[1] === 'a') {
+      return parts.slice(3).join('/');
+    }
+    console.warn(`Unrecognized Uploadthing URL format: ${url}`);
+    return null;
+  } catch {
+    return null;
   }
 }
 
@@ -100,7 +116,7 @@ export function extractFilesAndFields(formData: FormData): {
 } {
   const fields: Record<string, string> = {};
   const files: File[] = [];
-  
+
   for (const [key, value] of formData.entries()) {
     if (value instanceof File) {
       files.push(value);
@@ -108,7 +124,7 @@ export function extractFilesAndFields(formData: FormData): {
       fields[key] = value;
     }
   }
-  
+
   return { fields, files };
 }
 
@@ -118,13 +134,13 @@ export function validateImageCount(
   newCount: number
 ): { valid: boolean; error?: string } {
   const total = existingCount + newCount;
-  
+
   if (total > 3) {
     return {
       valid: false,
       error: `Maximum 3 images allowed per item. Currently have ${existingCount}, trying to add ${newCount}.`,
     };
   }
-  
+
   return { valid: true };
 }
