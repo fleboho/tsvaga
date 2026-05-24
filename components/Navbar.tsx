@@ -18,7 +18,14 @@ export default function Navbar() {
             <Link href="/" className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  {/* Magnifying glass handle */}
+                  <line x1="14.5" y1="14.5" x2="21" y2="21" strokeWidth={2} strokeLinecap="round" />
+                  {/* Lens ring */}
+                  <circle cx="9" cy="9" r="7" strokeWidth={1.5} />
+                  {/* U-turn return arrow */}
+                  <path d="M12 7 L12 6 C12 5.5 11.5 5.5 11 5.5 L7 5.5 C6.5 5.5 6 5.5 6 6.5 L6 11.5 C6 12.5 6.5 12.5 7 12.5 L12 12.5" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+                  {/* Arrowhead */}
+                  <path d="M12 12.5 L9.5 10 M12 12.5 L9.5 14.5" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
               <span className="text-xl font-bold text-gray-900">Lost & Found</span>
