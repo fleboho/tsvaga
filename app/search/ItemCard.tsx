@@ -18,7 +18,7 @@ interface ItemCardProps {
 export default function ItemCard({ item }: ItemCardProps) {
   const mainImage = item.imageUrls && item.imageUrls.length > 0 
     ? item.imageUrls[0] 
-    : '/placeholder-item.jpg';
+    : '/placeholder-item.svg';
 
   const statusColors = {
     'AVAILABLE': { bg: 'bg-green-600', text: 'text-white', label: 'Available' },
