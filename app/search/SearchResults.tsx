@@ -1,5 +1,6 @@
 import ItemCard from './ItemCard';
 import Pagination from './Pagination';
+import { headers } from 'next/headers';
 
 interface Item {
   id: string;
@@ -35,8 +36,13 @@ async function fetchSearchResults(params: any): Promise<SearchResponse> {
     if (params.location) queryParams.set('location', params.location);
     if (params.page) queryParams.set('page', params.page);
     if (params.pageSize) queryParams.set('pageSize', params.pageSize);
-    
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/items?${queryParams.toString()}`);
+
+    const headersList = await headers();
+    const host = headersList.get('host') || 'localhost:3000';
+    const protocol = headersList.get('x-forwarded-proto') || 'http';
+    const baseUrl = `${protocol}://${host}`;
+
+    const response = await fetch(`${baseUrl}/api/items?${queryParams.toString()}`);
     
     if (!response.ok) {
       throw new Error('Failed to fetch search results');
