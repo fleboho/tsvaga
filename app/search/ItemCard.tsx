@@ -21,8 +21,8 @@ export default function ItemCard({ item }: ItemCardProps) {
     : '/placeholder-item.jpg';
 
   const statusColors = {
-    'AVAILABLE': { bg: 'bg-green-100', text: 'text-green-800', label: 'Available' },
-    'RETURNED': { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Returned' },
+    'AVAILABLE': { bg: 'bg-green-600', text: 'text-white', label: 'Available' },
+    'RETURNED': { bg: 'bg-gray-500', text: 'text-white', label: 'Returned' },
   };
 
   const statusConfig = statusColors[item.status as keyof typeof statusColors] || statusColors.AVAILABLE;
@@ -30,15 +30,15 @@ export default function ItemCard({ item }: ItemCardProps) {
   return (
     <Link href={`/items/${item.id}`} className="block group">
       <div className="flex flex-row h-32 bg-white rounded-lg border border-gray-200 overflow-hidden hover:border-primary-300 hover:shadow-sm transition-all duration-200">
-        {/* Thumbnail - fixed 128x128 */}
-        <div className="relative w-32 h-32 flex-shrink-0 bg-gray-100 overflow-hidden">
+        {/* Thumbnail - 180px wide */}
+        <div className="relative w-[180px] h-32 flex-shrink-0 bg-gray-100 overflow-hidden">
           {item.imageUrls && item.imageUrls.length > 0 ? (
             <Image
               src={mainImage}
               alt={item.title}
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-200"
-              sizes="128px"
+              sizes="180px"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
@@ -51,20 +51,20 @@ export default function ItemCard({ item }: ItemCardProps) {
 
         {/* Content - middle section */}
         <div className="flex-1 flex flex-col justify-center px-4 py-2 min-w-0">
-          <h3 className="text-sm font-semibold text-gray-900 truncate group-hover:text-primary-600 transition-colors">
+          <h3 className="text-base font-semibold text-gray-900 truncate group-hover:text-primary-600 transition-colors">
             {item.title}
           </h3>
-          <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">
+          <p className="text-sm text-gray-500 mt-1 line-clamp-2 leading-relaxed">
             {item.description}
           </p>
-          <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+          <div className="flex items-center gap-2 mt-2 flex-wrap">
             {item.category && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600">
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
                 {item.category}
               </span>
             )}
             {item.location && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600">
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">
                 📍 {item.location}
               </span>
             )}
@@ -72,11 +72,11 @@ export default function ItemCard({ item }: ItemCardProps) {
         </div>
 
         {/* Right section - status + date */}
-        <div className="flex flex-col items-end justify-between py-3 pr-4 flex-shrink-0">
-          <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${statusConfig.bg} ${statusConfig.text}`}>
+        <div className="flex flex-col items-end justify-between py-3 pr-5 flex-shrink-0">
+          <span className={`inline-flex items-center px-3 py-1 rounded-md text-sm font-bold tracking-wide ${statusConfig.bg} ${statusConfig.text}`}>
             {statusConfig.label}
           </span>
-          <span className="text-[10px] text-gray-400 whitespace-nowrap">
+          <span className="text-xs text-gray-400 whitespace-nowrap">
             {new Date(item.createdAt).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
