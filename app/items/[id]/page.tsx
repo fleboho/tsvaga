@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import ContactForm from '@/components/ContactForm';
+import { headers } from 'next/headers';
 
 interface Item {
   id: string;
@@ -17,7 +18,12 @@ interface Item {
 
 async function getItem(id: string): Promise<Item | null> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/items/${id}`, {
+    const headersList = await headers();
+    const host = headersList.get('host') || 'localhost:3000';
+    const protocol = headersList.get('x-forwarded-proto') || 'http';
+    const baseUrl = `${protocol}://${host}`;
+
+    const response = await fetch(`${baseUrl}/api/items/${id}`, {
       cache: 'no-store',
     });
     

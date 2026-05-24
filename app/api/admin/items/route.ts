@@ -40,43 +40,65 @@ export async function POST(request: NextRequest) {
   if (errorResponse) return errorResponse;
   
   try {
-    // Parse multipart form data
-    const formData = await request.formData();
-    
-    // Extract fields and files
-    const title = formData.get('title') as string;
-    const description = formData.get('description') as string;
-    const category = formData.get('category') as string;
-    const location = formData.get('location') as string;
-    
-    // Extract document fields
-    const isDocument = formData.get('isDocument') === 'true' || formData.get('isDocument') === 'on';
-    const documentNumber = formData.get('documentNumber') as string;
-    const documentYear = formData.get('documentYear') as string;
-    const issuingAuthority = formData.get('issuingAuthority') as string;
-    const holderName = formData.get('holderName') as string;
-    
-    // Get image files
-    const imageFiles: File[] = [];
-    for (let i = 0; i < 3; i++) {
-      const file = formData.get(`images[${i}]`) as File | null;
-      if (file && file.size > 0) {
-        imageFiles.push(file);
+    let title: string, description: string, category: string, location: string;
+    let isDocument = false;
+    let documentNumber = '';
+    let documentYear = '';
+    let issuingAuthority = '';
+    let holderName = '';
+    let imageFiles: File[] = [];
+
+    const contentType = request.headers.get('content-type') || '';
+
+    if (contentType.includes('multipart/form-data')) {
+      // Parse multipart form data (for image uploads)
+      const formData = await request.formData();
+
+      title = (formData.get('title') as string) || '';
+      description = (formData.get('description') as string) || '';
+      category = (formData.get('category') as string) || '';
+      location = (formData.get('location') as string) || '';
+
+      isDocument = formData.get('isDocument') === 'true' || formData.get('isDocument') === 'on';
+      documentNumber = (formData.get('documentNumber') as string) || '';
+      documentYear = (formData.get('documentYear') as string) || '';
+      issuingAuthority = (formData.get('issuingAuthority') as string) || '';
+      holderName = (formData.get('holderName') as string) || '';
+
+      // Get image files
+      for (let i = 0; i < 3; i++) {
+        const file = formData.get(`images[${i}]`) as File | null;
+        if (file && file.size > 0) {
+          imageFiles.push(file);
+        }
       }
+
+      // Validate image count (max 3)
+      if (imageFiles.length > 3) {
+        return NextResponse.json(
+          { error: 'Maximum 3 images allowed per item' },
+          { status: 400 }
+        );
+      }
+    } else {
+      // Parse JSON body (for API/testing without file uploads)
+      const body = await request.json();
+      title = body.title || '';
+      description = body.description || '';
+      category = body.category || '';
+      location = body.location || '';
+
+      isDocument = body.isDocument === true || body.isDocument === 'true';
+      documentNumber = body.documentNumber || '';
+      documentYear = body.documentYear || '';
+      issuingAuthority = body.issuingAuthority || '';
+      holderName = body.holderName || '';
     }
     
     // Validate required fields
     if (!title || !description) {
       return NextResponse.json(
         { error: 'Title and description are required' },
-        { status: 400 }
-      );
-    }
-    
-    // Validate image count (max 3)
-    if (imageFiles.length > 3) {
-      return NextResponse.json(
-        { error: 'Maximum 3 images allowed per item' },
         { status: 400 }
       );
     }
