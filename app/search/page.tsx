@@ -64,16 +64,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           
           {/* Results Section */}
           <div className="p-8">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h3 className="text-xl font-semibold text-gray-900">Search Results</h3>
-                <p className="text-gray-600 mt-1">Items matching your search criteria</p>
-              </div>
-              <div className="text-sm text-gray-500">
-                {params.q || params.category || params.location ? 'Filtered results' : 'All available items'}
-              </div>
-            </div>
-            
             <Suspense fallback={
               <div className="space-y-8">
                 <div className="h-8 bg-gray-100 animate-pulse rounded w-1/4"></div>
