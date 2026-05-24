@@ -26,21 +26,41 @@ export async function PATCH(
       );
     }
     
-    // Parse multipart form data
-    const formData = await request.formData();
-    
-    // Extract fields
-    const title = formData.get('title') as string;
-    const description = formData.get('description') as string;
-    const category = formData.get('category') as string;
-    const location = formData.get('location') as string;
-    
-    // Extract document fields
-    const isDocument = formData.get('isDocument') === 'true' || formData.get('isDocument') === 'on';
-    const documentNumber = formData.get('documentNumber') as string;
-    const documentYear = formData.get('documentYear') as string;
-    const issuingAuthority = formData.get('issuingAuthority') as string;
-    const holderName = formData.get('holderName') as string;
+    // Parse body (supports both multipart/form-data and JSON)
+    const contentType = request.headers.get('content-type') || '';
+    let title: string | undefined;
+    let description: string | undefined;
+    let category: string | undefined;
+    let location: string | undefined;
+    let isDocument = false;
+    let documentNumber: string | undefined;
+    let documentYear: string | undefined;
+    let issuingAuthority: string | undefined;
+    let holderName: string | undefined;
+
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await request.formData();
+      title = (formData.get('title') as string) || undefined;
+      description = (formData.get('description') as string) || undefined;
+      category = (formData.get('category') as string) || undefined;
+      location = (formData.get('location') as string) || undefined;
+      isDocument = formData.get('isDocument') === 'true' || formData.get('isDocument') === 'on';
+      documentNumber = (formData.get('documentNumber') as string) || undefined;
+      documentYear = (formData.get('documentYear') as string) || undefined;
+      issuingAuthority = (formData.get('issuingAuthority') as string) || undefined;
+      holderName = (formData.get('holderName') as string) || undefined;
+    } else {
+      const body = await request.json();
+      title = body.title;
+      description = body.description;
+      category = body.category;
+      location = body.location;
+      isDocument = body.isDocument === true || body.isDocument === 'true';
+      documentNumber = body.documentNumber;
+      documentYear = body.documentYear;
+      issuingAuthority = body.issuingAuthority;
+      holderName = body.holderName;
+    }
     
     // Build update data
     const updateData: any = {};
