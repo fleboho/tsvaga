@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/components/AuthProvider"
 import Navbar from "@/components/Navbar"
+import { VERSION_LABEL } from "@/lib/version"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -30,6 +31,7 @@ export default function RootLayout({
                 <div className="text-center text-gray-600">
                   <p className="text-sm">© {new Date().getFullYear()} Lost & Found MVP-1. All rights reserved.</p>
                   <p className="text-xs mt-2 text-gray-500">This is a demonstration platform for reuniting lost items with their owners.</p>
+                  <p className="text-[10px] mt-4 text-gray-400 select-none">{VERSION_LABEL}</p>
                 </div>
               </div>
             </footer>
