@@ -10,6 +10,9 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Lost & Found | Reuniting People with Their Belongings",
   description: "A modern platform to help people find lost items. Search found items, create alerts, and get notified when your lost items are found.",
+  icons: {
+    icon: "/favicon.ico",
+  },
 }
 
 export default function RootLayout({
