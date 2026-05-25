@@ -1,5 +1,7 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
+import GoogleProvider from "next-auth/providers/google"
+import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "./db"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
@@ -20,6 +22,8 @@ declare module "next-auth" {
       id: string
       email: string
       role: string
+      name?: string | null
+      image?: string | null
     }
   }
 }
@@ -32,6 +36,7 @@ declare module "next-auth/jwt" {
 }
 
 export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma) as NextAuthOptions["adapter"],
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
@@ -40,6 +45,10 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
   },
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -58,7 +67,7 @@ export const authOptions: NextAuthOptions = {
             where: { email: validatedCredentials.email }
           })
 
-          if (!user) {
+          if (!user || !user.password) {
             return null
           }
 
@@ -71,6 +80,8 @@ export const authOptions: NextAuthOptions = {
           return {
             id: user.id,
             email: user.email,
+            name: user.name,
+            image: user.image,
             role: user.role,
           }
         } catch (error) {
@@ -81,10 +92,22 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
+      // On sign-in, carry user data to token
       if (user) {
         token.role = user.role
         token.id = user.id
+      }
+      // For existing sessions, ensure role is set from DB
+      if (!token.role && token.email) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: token.email },
+          select: { id: true, role: true }
+        })
+        if (dbUser) {
+          token.role = dbUser.role
+          token.id = dbUser.id
+        }
       }
       return token
     },
