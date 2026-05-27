@@ -7,7 +7,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="text-center py-12 md:py-20">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
-          Lost Something? <span className="text-primary-600">Allen is Awesome</span>
+          Lost Something? <span className="text-primary-600">Find It Here</span>
         </h1>
         <p className="text-xl text-gray-600 mb-10 max-w-4xl mx-auto">
           Our platform helps reunite people with their lost belongings. Search through found items, 
