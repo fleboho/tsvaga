@@ -49,7 +49,73 @@ export async function POST(
         },
       },
     });
-    
+
+    // Alert matching — notify users whose alerts match this returned item
+    try {
+      const alerts = await prisma.alert.findMany({
+        include: {
+          user: {
+            select: {
+              email: true,
+            },
+          },
+          category: true,
+          location: true,
+        },
+      });
+
+      const itemTitle = existingItem.title;
+      const description = existingItem.description;
+      const category = existingItem.categoryId;
+      const location = existingItem.locationId;
+      const isDocument = existingItem.isDocument;
+      const documentNumber = existingItem.documentNumber;
+      const documentYear = existingItem.documentYear;
+      const issuingAuthority = existingItem.issuingAuthority;
+      const holderName = existingItem.holderName;
+
+      const matchingAlerts = alerts.filter((alert: any) => {
+        const keywords = alert.keywords.toLowerCase().split(/\s+/).filter((k: string) => k.length > 0);
+        const itemText = `${itemTitle} ${description}`.toLowerCase();
+
+        const keywordMatch = keywords.every((keyword: string) =>
+          itemText.includes(keyword)
+        );
+        if (!keywordMatch) return false;
+
+        if (alert.categoryId && alert.categoryId !== category) return false;
+        if (alert.locationId && alert.locationId !== location) return false;
+
+        if (alert.isDocument) {
+          if (!isDocument) return false;
+          if (alert.documentNumber && documentNumber && !documentNumber.toLowerCase().includes(alert.documentNumber.toLowerCase())) return false;
+          if (alert.documentYear && documentYear && !documentYear.toLowerCase().includes(alert.documentYear.toLowerCase())) return false;
+          if (alert.issuingAuthority && issuingAuthority && !issuingAuthority.toLowerCase().includes(alert.issuingAuthority.toLowerCase())) return false;
+          if (alert.holderName && holderName && !holderName.toLowerCase().includes(alert.holderName.toLowerCase())) return false;
+        }
+
+        return true;
+      });
+
+      matchingAlerts.forEach((alert: any) => {
+        console.log(`[MOCK EMAIL] Item returned notification sent to: ${alert.user.email}`);
+        console.log(`  Alert ID: ${alert.id}`);
+        console.log(`  Item ID: ${updatedItem.id}`);
+        console.log(`  Item Title: ${itemTitle}`);
+        console.log(`  Status: MARKED AS RETURNED`);
+        console.log(`  Message: Good news! An item matching your alert has been returned to its owner.`);
+        if (alert.category) console.log(`  Category: ${alert.category.name}`);
+        if (alert.location) console.log(`  Location: ${alert.location.name}`);
+        console.log('---');
+      });
+
+      if (matchingAlerts.length > 0) {
+        console.log(`Found ${matchingAlerts.length} matching alert(s) for returned item ${updatedItem.id}`);
+      }
+    } catch (alertError) {
+      console.error('Error during alert matching on return:', alertError);
+    }
+
     return NextResponse.json({
       message: 'Item marked as returned successfully',
       item: updatedItem,
