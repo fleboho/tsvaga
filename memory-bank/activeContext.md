@@ -1,23 +1,31 @@
 # Active Context
 
 **Last updated:** 2026-10-21
-**Focus:** MVP-1 closeout and handover to the development team
+**Focus:** Production hardening complete; deploy pre-flight remaining
 
 ## Current Work Focus
 
-Documentation and repo hygiene so the project can be handed off cleanly.
+Production hardening (2026-10-21). Implemented:
+- Email delivery (`lib/email.ts`, Resend + console fallback) wired into contact and alerts
+- Contact requests persisted in `ContactRequest` before sending
+- Postgres rate limiting on contact, register, and login
+- Prisma migrations (baseline + new tables), `prisma:deploy` script
+- `admin:create` bootstrap script (creates or promotes without wiping data)
+- Security headers/CSP, restricted image hosts, error boundaries
+- Uploadthing cleanup on item delete; item archive now keeps colour and images
+- Colour captured in admin create/edit forms and enforced by matching
+- Lint fixed (flat config), 15 unit tests, `type-check`, GitHub Actions CI
 
-Completed in this pass:
-- Full audit of the repository against the documented state
-- `README.md` rewritten with real setup, env, scripts, structure, and known gaps
-- `memory-bank/` brought in line with the actual codebase (this file, `progress.md`,
-  `techContext.md`, `systemPatterns.md`, `projectbrief.md`)
+Verification: `tsc --noEmit` ✅, `npm run lint` ✅ 0 errors, `npm test` ✅ 15/15,
+`next build` ✅ 21 routes.
 
-Audit result: the app builds cleanly (`tsc --noEmit` and `next build` both pass,
-21 routes) and all MVP-1 features are implemented — public search, auth, alerts,
-admin item/category/location management, mark-returned, and alert matching.
+Remaining before launch: configure Resend + sender domain, apply the migration baseline
+to the live database, create the production admin, smoke-test contact and alert emails,
+and choose an error-tracking service.
 
 ## Recent Changes (code)
+
+0. **Production hardening** — see Current Work Focus
 
 1. **Admin locations page** (v0.1.2) — `/admin/locations` with `LocationsAdminClient`,
    backed by `/api/locations` and `/api/locations/[id]`
@@ -33,11 +41,11 @@ admin item/category/location management, mark-returned, and alert matching.
 
 ## Open Issues
 
-1. `npm run lint` is broken — Next 16 removed `next lint`; needs `eslint.config.mjs` + `eslint .`
-2. No automated tests
-3. No Prisma migration history (`/prisma/migrations` gitignored, `db push` only)
-4. Item color is matched by alerts but not settable in the admin create form (TODO)
-5. Local `/public/uploads` is not durable on Vercel
+1. Resend is implemented but not configured (no sender domain/API key yet)
+2. Contact requests have no admin UI
+3. No password reset or email verification
+4. No error-tracking service
+5. Rate limiter fails open when Postgres is unreachable
 
 ## Active Decisions
 
@@ -53,15 +61,19 @@ admin item/category/location management, mark-returned, and alert matching.
 
 ## Next Steps
 
-1. Fix lint tooling
-2. Baseline Prisma migrations (`prisma migrate diff` → initial migration)
-3. Add minimal tests around auth guards and alert matching
-4. Add color to the admin item form
-5. Confirm Uploadthing plan/limits for production
+1. Configure Resend and verify the sender domain
+2. Apply the migration baseline to the live Neon database, then `prisma:deploy`
+3. Create the production admin via `admin:create`
+4. Smoke-test contact form + alert notifications end to end
+5. Choose error tracking and add contact-request visibility to the admin dashboard
 
 ## Learnings
 
 - Next 16 passes `params` as a Promise in both pages and route handlers — always `await`
-- `next lint` is gone in Next 16; the ESLint CLI is required
+- `next lint` is gone in Next 16; use ESLint 9 with `eslint-config-next/core-web-vitals`
+  (it exports a flat config array)
+- `eslint-config-next` 16 enables React Compiler rules; `react-hooks/set-state-in-effect`
+  is disabled because effect-based fetching is used in the admin/dashboard clients
 - Google OAuth and credentials can coexist with `PrismaAdapter` when sessions stay JWT
-- Category/location dropdowns must be seeded before the UI is usable
+- Prisma `migrate dev` needs a shadow database — generate SQL with `migrate diff` instead
+  when no local Postgres is available

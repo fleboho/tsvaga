@@ -35,6 +35,10 @@ Core models (see `prisma/schema.prisma`):
   document fields, `color`
 - **Category** / **Location** — admin-managed lookup tables with `isActive`;
   Location also stores address/lat/long
+- **ContactRequest** — itemId + snapshotted title, name, email, message, createdAt;
+  written before email so enquiries survive delivery failures
+- **RateLimit** — `key` (e.g. `contact:203.0.113.7`), `count`, `windowEnds`; fixed-window
+  counters used by the API rate limiter
 
 Notes:
 - Categories and locations are **tables**, not enums. "Other" is represented by
@@ -61,7 +65,7 @@ Notes:
 GET    /api/items                    public search (q, category, location, page…)
 GET    /api/items/[id]               public item detail
 GET    /api/items/filters            categories + locations for filter UI
-POST   /api/contact                  mock contact email
+POST   /api/contact                  store ContactRequest + email admin (rate limited)
 
 GET    /api/alerts                   user's alerts
 POST   /api/alerts                   create alert
@@ -109,16 +113,10 @@ alert matches item when:
   5. alert.color         === item.color                 [if set]
 ```
 
-Matching alerts are iterated and a mock email is printed:
-
-```
-To:      <user email>
-Subject: ...
-Message: ...
-```
-
-No notification records are persisted; nothing is deduplicated. If real email is added,
-this is the single place to swap in a provider, and de-duplication should be introduced.
+Rules live in `lib/alert-matching.ts` (`matchesAlert`) so both call sites stay identical.
+Matched users receive an email through `lib/email.ts` (Resend); failures are logged and
+never block the request. No notification records are persisted and nothing is deduplicated —
+add a `Notification` table if delivery history or idempotency is required.
 
 ## Flows
 
@@ -131,23 +129,36 @@ contact modal → `POST /api/contact` → console log.
 
 **Alert lifecycle** — `/alerts` (requires auth) → `/api/alerts` CRUD → scoped by `userId`.
 
-**Admin item creation** — modal → `POST /api/admin/items` (+ image uploads) → transaction
-creates item → fetch active alerts → filter in memory → log matches.
+**Admin item creation** — modal → `POST /api/admin/items` (+ image uploads) → creates item →
+fetches active alerts → `matchesAlert` → emails matches.
 
 **Mark returned** — admin action → `POST .../mark-returned` → update status → re-run
 matching → log.
 
-**Delete item** — `DELETE /api/admin/items/[id]` → copy row into `DeletedItem` →
-delete original.
+**Delete item** — `DELETE /api/admin/items/[id]` → copy row (incl. colour and images) into
+`DeletedItem` → delete original → best-effort `utapi.deleteFiles` for each image.
+
+## Rate Limiting
+
+- `lib/rate-limit.ts` — atomic fixed-window counters in Postgres
+  (`INSERT … ON CONFLICT DO UPDATE`), so limits hold across serverless instances
+- Budgets: contact 5 / 10 min per IP; register 5 / hour per IP; login 10 / 15 min per
+  IP + email
+- Fail-open on database errors (availability over blocking); stale rows cleaned opportunistically
+- Responses use 429 with `Retry-After` via `tooManyRequests()`
 
 ## Security
 
 - Zod validation on all write endpoints
+- Security headers set in `next.config.js` (CSP, HSTS, X-Frame-Options DENY, nosniff,
+  Referrer-Policy, Permissions-Policy); `poweredByHeader` disabled
+- `images.remotePatterns` allowlists Uploadthing hosts only
 - Prisma parameterized queries
 - Ownership checks on alert routes (`userId` from session, never from the body)
 - Admin checks on admin routes and pages
 - bcrypt hashing (cost 10)
 - React escaping for rendered content; no `dangerouslySetInnerHTML` usage
+- Contact requests are stored and emailed; message bodies are never printed in production logs
 
 ## Frontend Patterns
 

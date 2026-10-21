@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-10-21
 **App version:** 0.1.2
-**MVP-1 status:** Feature complete, in closeout/handover
+**MVP-1 status:** Feature complete; production hardening applied
 
 ## Verification Snapshot (2026-10-21)
 
@@ -10,8 +10,8 @@
 | --- | --- |
 | `npx tsc --noEmit` | ✅ 0 errors |
 | `npx next build` | ✅ compiles, 21 routes generated |
-| `npm run lint` | ❌ broken — `next lint` removed in Next 16 |
-| Automated tests | ❌ none configured |
+| `npm run lint` | ✅ 0 errors (3 `<img>` warnings) |
+| `npm test` | ✅ 15 tests pass (alert matching, rate-limit helpers) |
 | Git state | `main` clean, in sync with `origin/main` |
 
 ## What Works
@@ -21,7 +21,7 @@
 - `/search`: keyword + category + location filtering, pagination, item cards
 - `/search/advanced`: document-aware search
 - `/items/[id]`: gallery, metadata, status badge, contact-admin form
-- Contact form validates input and logs a mock email to the console
+- Contact form validates input, persists the request, and emails the admin
 
 ### Authentication ✅
 - Credentials registration (`/api/auth/register`) with bcrypt hashing
@@ -55,23 +55,40 @@
 `Alert`, `Category`, `Location`; enums `Role` (USER/ADMIN) and `ItemStatus`
 (AVAILABLE/RETURNED). Categories and locations are first-class tables, not enums.
 
+## Production Hardening (2026-10-21)
+
+- **Email** — `lib/email.ts` sends via Resend when configured, console fallback otherwise.
+  Wired into contact form, new-item matches, and mark-returned notifications
+- **Contact requests** — persisted to `ContactRequest` before email, so enquiries survive
+  delivery failures
+- **Rate limiting** — Postgres fixed-window limiter (`lib/rate-limit.ts`): contact 5/10min,
+  register 5/hour, login 10/15min per IP+email
+- **Migrations** — baseline + `contact_requests_rate_limit` migrations committed;
+  `prisma migrate deploy` script added
+- **Admin bootstrap** — `npm run admin:create -- <email>` creates or promotes an admin
+  without wiping data
+- **Security** — CSP, HSTS, X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy;
+  `images.remotePatterns` restricted to Uploadthing hosts; `poweredByHeader` off
+- **Error handling** — `app/error.tsx` and `app/global-error.tsx`
+- **Storage hygiene** — item deletion archives images and removes Uploadthing files
+- **Tooling** — flat ESLint config, `npm run lint` fixed, `npm test` with 15 tests,
+  `npm run type-check`, GitHub Actions CI
+- **Colour** — now captured in admin create/edit forms and enforced in matching
+
 ## Known Gaps
 
-1. **Lint script broken** — `next lint` no longer exists in Next 16; `.eslintrc.json`
-   is legacy format for ESLint 9. Needs flat config + `eslint .`
-2. **No tests** — no runner, no unit/integration/e2e coverage
-3. **No migration history** — `/prisma/migrations` is gitignored; schema is applied
-   with `prisma db push`. Blocks safe staged/production rollouts
-4. **Color not exposed in admin item form** — TODO in `app/api/admin/items/route.ts`
-5. **Uploads require Uploadthing** — images go through `utapi` (`lib/file-upload.ts`);
-   without `UPLOADTHING_TOKEN` admin image uploads fail. Legacy `/public/uploads` config remains
-6. **Real email** — intentionally out of scope for MVP-1
+1. **No error-tracking service** — errors only reach platform logs
+2. **No admin UI for contact requests** — stored but readable only in the database
+3. **No password reset / email verification**
+4. **Uploads require Uploadthing** — without `UPLOADTHING_TOKEN` image uploads fail
+5. **Rate limiter fails open** — if Postgres is unreachable, requests are allowed
+6. **Production email untested against Resend** — needs a verified sender domain and a live key
 
 ## Progress by Area
 
 | Area | Status |
 | --- | --- |
-| Infrastructure & tooling | 90% (lint/tests/migrations open) |
+| Infrastructure & tooling | 95% (CI, lint, tests, migrations in place) |
 | Database & schema | 100% |
 | Authentication & RBAC | 100% |
 | Public features | 100% |
@@ -93,13 +110,14 @@
   (optional), admin locations page, mark-returned with alert matching
 - **2026-10-21** — Documentation aligned with actual codebase; closeout audit performed
 
-## Next Steps (closeout)
+## Next Steps
 
-1. Fix `npm run lint` (flat ESLint config)
-2. Introduce Prisma migrations and baseline the current schema
-3. Add a minimal test suite (auth guards, alert matching, search filters)
-4. Expose color in the admin item create form
-5. Confirm Uploadthing plan/limits and document production image handling
+1. Configure Resend (verified domain, `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAIL`)
+2. Run the production pre-flight: `migrate resolve --applied <baseline>`, `prisma:deploy`,
+   `admin:create`, smoke-test contact + alert notifications
+3. Decide on error tracking (Sentry or similar)
+4. Add contact-request visibility to the admin dashboard
+5. Plan password reset and email verification for MVP-2
 
 ## Success Criteria
 
@@ -107,5 +125,5 @@
 - [x] Registered users can create and manage alerts
 - [x] Admins can manage the found items catalog
 - [x] Alert matching works per the documented rules
-- [x] Contact form sends mock emails
+- [x] Contact form delivers enquiries to the admin inbox
 - [x] All features run on the mandated stack

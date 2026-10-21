@@ -51,6 +51,11 @@ UPLOADTHING_TOKEN="ey..."          # full token, not the API key
 # Optional (both or neither) — enables Google sign-in
 GOOGLE_CLIENT_ID=""
 GOOGLE_CLIENT_SECRET=""
+
+# Email (Resend). Without these, email is logged (dev) or dropped (prod)
+RESEND_API_KEY=""
+EMAIL_FROM="Tsvaga <notifications@yourdomain.com>"
+ADMIN_EMAIL="admin@yourdomain.com"        # defaults to EMAIL_FROM
 ```
 
 `.env` is gitignored; only `.env.example` is tracked. Next.js loads `.env`
@@ -63,7 +68,11 @@ directly (`.env.local` also works if preferred).
 | `npm run dev` | Dev server |
 | `npm run build` | Production build |
 | `npm start` | Serve production build |
-| `npm run lint` | **Broken on Next 16** (see Constraints) |
+| `npm run lint` | ESLint flat config (`eslint .`) |
+| `npm run type-check` | `tsc --noEmit` |
+| `npm test` | Node test runner via `tsx --test` |
+| `npm run admin:create` | Create or promote an admin |
+| `npm run prisma:deploy` | `prisma migrate deploy` |
 | `npm run prisma:generate` | Regenerate Prisma client |
 | `npm run prisma:push` | Push schema without migrations |
 | `npm run prisma:migrate` | `prisma migrate dev` |
@@ -80,7 +89,7 @@ app/
     auth/[...nextauth]/     NextAuth handler
     auth/register/          credentials registration
     categories/             category CRUD
-    contact/                mock contact email
+    contact/                contact request + admin email
     items/                  public search, detail, filters
     locations/              location CRUD
   admin/                    dashboard, items, items/[id]/edit, categories, locations
@@ -115,9 +124,13 @@ memory-bank/                project documentation
 
 ### Database
 - PostgreSQL + Prisma only
-- Schema changes in development use `prisma db push`
-- `/prisma/migrations` is gitignored — **no migration history yet**
-- Deletes of items archive to `DeletedItem` before removal
+- Migrations live in `prisma/migrations` (baseline `20251021000000_baseline`)
+- New databases: `prisma migrate deploy`. Existing databases that predate migrations:
+  `prisma migrate resolve --applied 20251021000000_baseline` once, then deploy
+- `prisma db push` is still available for throwaway local databases
+- `prisma migrate dev` needs a shadow database; with no local Postgres, generate SQL with
+  `prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script`
+- Deletes of items archive to `DeletedItem` (including colour and image URLs) before removal
 
 ### API
 - All handlers under `app/api/*` (route handlers, TypeScript)
@@ -125,8 +138,10 @@ memory-bank/                project documentation
 - Next 16: dynamic `params` are Promises and must be awaited
 
 ### Email
-- Mock only — `console.log` blocks with to/subject/message
-- Replace at the notification points (`admin/items` create, `mark-returned`, `contact`)
+- `lib/email.ts` posts to Resend's REST API when `RESEND_API_KEY` + `EMAIL_FROM` are set
+- Without credentials: structured console output in development, error log in production
+- Sending points: `contact` (to `ADMIN_EMAIL`), `admin/items` create, `mark-returned`
+- Delivery failures are logged and never fail the request
 
 ### Images
 - Item images upload to Uploadthing via `lib/uploadthing.ts` (`UTApi`) and
@@ -135,14 +150,22 @@ memory-bank/                project documentation
 - Legacy `/public/uploads` handling remains in `.gitignore` and `next.config.js`
   (`images.unoptimized` in development)
 
-## Known Tooling Issues
+## Testing & CI
 
-1. `npm run lint` → `Invalid project directory … /lint`. `next lint` was removed in
-   Next 16. Fix: install/keep ESLint 9, add `eslint.config.mjs` (flat config, extending
-   `next/core-web-vitals`), change the script to `eslint .`
-2. `.eslintrc.json` is the legacy config format; migrate when adding the flat config
-3. No test runner is installed
-4. `next-env.d.ts` and `*.tsbuildinfo` are gitignored (correct)
+- `tests/*.test.ts` run with Node's built-in test runner through `tsx` (no extra deps)
+- Coverage: alert-matching rules (keywords, category, location, colour, document fields)
+  and rate-limit helpers (IP extraction, 429 response shape)
+- `.github/workflows/ci.yml` runs lint → type-check → test → build on pushes and PRs
+
+## Tooling Notes
+
+1. `eslint.config.mjs` uses the flat config array exported by
+   `eslint-config-next/core-web-vitals`
+2. `react-hooks/set-state-in-effect` is disabled — the admin/dashboard clients fetch in
+   effects; revisit if they move to server components
+3. `next-env.d.ts` and `*.tsbuildinfo` are gitignored (correct)
+4. No local PostgreSQL is available in this environment; DB-dependent flows are verified
+   with build/type-check only
 
 ## Git Workflow
 

@@ -6,7 +6,7 @@
 ## Overview
 
 **Tsvaga** is a lost & found web application. The public searches a catalog of found
-items, registered users create alerts and are notified (mock email) when a matching item
+items, registered users create alerts and are notified by email when a matching item
 is logged, and admins maintain the catalog, categories, and locations.
 
 ## MVP-1 Scope (as built)
@@ -15,7 +15,7 @@ is logged, and admins maintain the catalog, categories, and locations.
 - Keyword search with category and location filters and pagination
 - Advanced document search (document number, year, issuing authority, holder name)
 - Item detail page with image gallery
-- Contact-admin form that sends a mock email (`console.log`)
+- Contact-admin form that stores the request and emails the admin
 
 ### 2. Registered users
 - Register and sign in (credentials; Google optional)
@@ -50,7 +50,7 @@ is logged, and admins maintain the catalog, categories, and locations.
 - **UI:** React 19, Tailwind CSS 4
 - **Validation:** Zod 4
 - **Uploads:** Uploadthing for images
-- **Email:** mocked with `console.log`
+- **Email:** Resend REST API; structured console fallback when unconfigured
 
 ## Roles & Permissions
 
@@ -72,7 +72,7 @@ is logged, and admins maintain the catalog, categories, and locations.
 - Success stories
 - Payments or monetization
 - GDPR compliance workflows
-- Real email delivery (console mock only)
+- Real email delivery beyond the single Resend integration
 - Additional social login providers beyond the optional Google integration
 
 ## Goals
@@ -88,6 +88,6 @@ is logged, and admins maintain the catalog, categories, and locations.
 - [x] Registered users can create and manage alerts
 - [x] Admins can manage the catalog, categories, and locations
 - [x] Alert matching follows the documented rules
-- [x] Contact form produces a mock email
+- [x] Contact form stores and emails enquiries
 - [x] Everything runs on the mandated stack
 - [x] Production build passes (`next build`, `tsc --noEmit`)
