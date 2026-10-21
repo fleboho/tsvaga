@@ -1,246 +1,152 @@
 # Tech Context
 
-## Technologies Used
+**Last updated:** 2026-10-21
 
-### Core Stack (Mandatory)
-1. **Next.js 14+** (App Router)
-   - Framework for full-stack React application
-   - App Router for routing and layout
-   - Server Components and Server Actions
-   - Built-in API routes
+## Stack (as installed)
 
-2. **TypeScript**
-   - Strict type checking enabled
-   - Type-safe API responses and database queries
-   - Better developer experience and code quality
+| Concern | Choice | Version |
+| --- | --- | --- |
+| Framework | Next.js (App Router) | 16.1 |
+| Language | TypeScript (strict) | 5.9 |
+| UI | React / React DOM | 19.2 |
+| Styling | Tailwind CSS + PostCSS + Autoprefixer | 4.1 |
+| Database | PostgreSQL | 15+ |
+| ORM | Prisma Client / Prisma CLI | 6.19 |
+| Auth | next-auth + @auth/prisma-adapter | 4.24 / 2.11 |
+| Hashing | bcryptjs | 3.0 |
+| Validation | Zod | 4.3 |
+| Uploads | uploadthing / @uploadthing/react | 7.7 |
+| Icons | lucide-react | 0.563 |
+| UI primitives | @radix-ui/react-select, clsx, tailwind-merge, class-variance-authority | — |
+| Lint | eslint + eslint-config-next | 9.39 / 16.1 |
+| Scripts | tsx (for `prisma/seed.ts`) | 4.21 |
 
-3. **PostgreSQL**
-   - Relational database for structured data
-   - ACID compliance for data integrity
-   - Suitable for user, item, and alert relationships
+Runtime used in development: Node 22 (WSL2).
 
-4. **Prisma ORM**
-   - Type-safe database client
-   - Schema migrations
-   - Query builder with TypeScript support
-
-5. **Auth.js (NextAuth)**
-   - Authentication library for Next.js
-   - Credentials provider only (no social providers)
-   - Session management with JWT
-   - Role-based access control
-
-### Development Tools
-1. **Node.js** (Latest LTS version)
-2. **npm** or **yarn** for package management
-3. **Git** for version control
-4. **VS Code** as primary IDE
-
-### Key Dependencies
-```json
-{
-  "dependencies": {
-    "next": "^14.x",
-    "react": "^18.x",
-    "react-dom": "^18.x",
-    "typescript": "^5.x",
-    "@prisma/client": "^5.x",
-    "@auth/prisma-adapter": "^1.x",
-    "next-auth": "^5.x",
-    "zod": "^3.x",
-    "bcryptjs": "^2.x"
-  },
-  "devDependencies": {
-    "prisma": "^5.x",
-    "@types/node": "^20.x",
-    "@types/react": "^18.x",
-    "@types/react-dom": "^18.x",
-    "tailwindcss": "^3.x", // Optional but recommended
-    "autoprefixer": "^10.x",
-    "postcss": "^8.x"
-  }
-}
-```
-
-## Development Setup
+## Setup
 
 ### Prerequisites
-1. **Node.js** 18.17 or later
-2. **PostgreSQL** 15 or later
-3. **Git** for version control
+- Node.js 20+
+- PostgreSQL 15+ (or a hosted equivalent: Neon, Railway, Supabase)
 
-### Initial Setup Steps
+### Steps
+
 ```bash
-# 1. Clone repository (if applicable)
-git clone <repository-url>
-cd tsvaga-03
-
-# 2. Install dependencies
-npm install
-
-# 3. Set up environment variables
-cp .env.example .env.local
-# Edit .env.local with your database URL and auth secret
-
-# 4. Set up database
-npx prisma db push
-# or for production: npx prisma migrate dev
-
-# 5. Run development server
-npm run dev
+npm install                 # postinstall runs `prisma generate`
+cp .env.example .env        # then fill in values
+npx prisma db push          # create/update schema
+npm run prisma:seed         # optional sample data
+npm run dev                 # http://localhost:3000
 ```
 
 ### Environment Variables
+
 ```env
-# Database
-DATABASE_URL="postgresql://user:password@localhost:5432/lostandfound"
-
-# Authentication
-NEXTAUTH_SECRET="your-secret-key-here"
+# Required
+DATABASE_URL="postgresql://user:password@host:5432/db?sslmode=require"
+NEXTAUTH_SECRET="<openssl rand -base64 32>"
 NEXTAUTH_URL="http://localhost:3000"
+UPLOADTHING_TOKEN="ey..."          # full token, not the API key
 
-# Optional: Email configuration (mocked for MVP-1)
-EMAIL_FROM="noreply@lostandfound.example.com"
+# Optional (both or neither) — enables Google sign-in
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
 ```
 
-### Project Structure
+`.env` is gitignored; only `.env.example` is tracked. Next.js loads `.env`
+directly (`.env.local` also works if preferred).
+
+## Scripts
+
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Dev server |
+| `npm run build` | Production build |
+| `npm start` | Serve production build |
+| `npm run lint` | **Broken on Next 16** (see Constraints) |
+| `npm run prisma:generate` | Regenerate Prisma client |
+| `npm run prisma:push` | Push schema without migrations |
+| `npm run prisma:migrate` | `prisma migrate dev` |
+| `npm run prisma:studio` | Prisma Studio |
+| `npm run prisma:seed` | Run `prisma/seed.ts` |
+
+## Project Structure (actual)
+
 ```
-tsvaga-03/
-├── app/                    # Next.js App Router
-│   ├── api/               # API routes
-│   │   ├── auth/          # Auth.js routes
-│   │   ├── items/         # Item management
-│   │   └── alerts/        # Alert management
-│   ├── (public)/          # Public pages
-│   ├── (auth)/            # Authenticated pages
-│   ├── admin/             # Admin pages
-│   └── layout.tsx         # Root layout
-├── components/            # Reusable components
-├── lib/                   # Utility functions
-│   ├── auth.ts           # Auth configuration
-│   ├── db.ts             # Database client
-│   └── utils.ts          # Helper functions
-├── prisma/               # Database schema
-│   └── schema.prisma     # Prisma schema
-├── public/               # Static assets
-├── memory-bank/          # Project documentation
-└── package.json
-```
-
-## Technical Constraints
-
-### 1. Authentication Constraints
-- Only credentials provider allowed (email/password)
-- No social login providers (Google, GitHub, etc.)
-- Must use Auth.js v5+
-- Role-based access control required
-
-### 2. Database Constraints
-- Must use PostgreSQL
-- Must use Prisma ORM
-- Schema must support relationships between User, Item, Alert
-- Must include proper indexes for search performance
-
-### 3. API Constraints
-- All API routes must be under `/app/api`
-- Must use TypeScript for type safety
-- Must validate inputs with Zod
-- Must handle errors consistently
-
-### 4. Email Constraints
-- Email functionality must be mocked using `console.log`
-- No real email service integration in MVP-1
-- Must log email details for debugging
-
-## Tool Usage Patterns
-
-### Prisma Workflow
-```bash
-# 1. Edit schema
-code prisma/schema.prisma
-
-# 2. Generate client
-npx prisma generate
-
-# 3. Apply changes to database
-npx prisma db push
-# or for migrations: npx prisma migrate dev
-
-# 4. Open Prisma Studio (optional)
-npx prisma studio
+app/
+  api/
+    admin/items/…           admin item CRUD, images, mark-returned
+    alerts/                 user alert CRUD
+    auth/[...nextauth]/     NextAuth handler
+    auth/register/          credentials registration
+    categories/             category CRUD
+    contact/                mock contact email
+    items/                  public search, detail, filters
+    locations/              location CRUD
+  admin/                    dashboard, items, items/[id]/edit, categories, locations
+  alerts/                   user alert management
+  dashboard/                user dashboard
+  items/[id]/               public item detail
+  login/, register/         auth pages
+  search/                   search, advanced, ItemCard, Pagination, forms
+components/                 Navbar, AlertForm, ContactForm, AuthProvider, ui/
+lib/                        auth.ts, auth-utils.ts, db.ts, alert-schemas.ts,
+                            file-upload.ts, uploadthing.ts, utils.ts, version.ts
+prisma/                     schema.prisma, seed.ts
+public/                     static assets, uploads/
+memory-bank/                project documentation
 ```
 
-### Development Workflow
-```bash
-# Start development server
-npm run dev
+## Constraints & Conventions
 
-# Run TypeScript compiler
-npm run type-check
+### Auth
+- NextAuth **v4** (not v5). Options live in `lib/auth.ts`, exported as `authOptions`
+- JWT session strategy with `id` and `role` on the token/session
+- Prisma adapter backs `Account`/`Session`/`VerificationToken` for Google OAuth
+- Credentials provider validates with Zod + bcrypt
+- No social provider is configured unless the Google env vars exist
 
-# Run linting (if configured)
-npm run lint
+### Authorization
+- `requireAuth()` → redirects to `/login`
+- `requireAdmin()` → redirects to `/dashboard?error=admin_required` (pages) or returns a
+  403 descriptor (`returnJson = true`)
+- `checkAdminAccess()` → returns a `Response` or `null` for API routes
+- No `middleware.ts`; each protected page/route enforces access itself
 
-# Build for production
-npm run build
+### Database
+- PostgreSQL + Prisma only
+- Schema changes in development use `prisma db push`
+- `/prisma/migrations` is gitignored — **no migration history yet**
+- Deletes of items archive to `DeletedItem` before removal
 
-# Start production server
-npm start
-```
+### API
+- All handlers under `app/api/*` (route handlers, TypeScript)
+- Inputs validated with Zod; consistent `{ error }` JSON + status codes
+- Next 16: dynamic `params` are Promises and must be awaited
 
-### Testing Patterns
-```bash
-# Unit tests (if configured)
-npm test
+### Email
+- Mock only — `console.log` blocks with to/subject/message
+- Replace at the notification points (`admin/items` create, `mark-returned`, `contact`)
 
-# Integration tests (if configured)
-npm run test:integration
+### Images
+- Item images upload to Uploadthing via `lib/uploadthing.ts` (`UTApi`) and
+  `lib/file-upload.ts` (4MB limit; jpeg/png/webp)
+- `imageUrls` stores the returned remote URLs
+- Legacy `/public/uploads` handling remains in `.gitignore` and `next.config.js`
+  (`images.unoptimized` in development)
 
-# E2E tests (if configured)
-npm run test:e2e
-```
+## Known Tooling Issues
 
-## Development Guidelines
+1. `npm run lint` → `Invalid project directory … /lint`. `next lint` was removed in
+   Next 16. Fix: install/keep ESLint 9, add `eslint.config.mjs` (flat config, extending
+   `next/core-web-vitals`), change the script to `eslint .`
+2. `.eslintrc.json` is the legacy config format; migrate when adding the flat config
+3. No test runner is installed
+4. `next-env.d.ts` and `*.tsbuildinfo` are gitignored (correct)
 
-### Code Style
-1. **TypeScript**: Use strict mode, avoid `any` type
-2. **Imports**: Use absolute imports when possible
-3. **Components**: Use functional components with TypeScript
-4. **Error Handling**: Use try-catch blocks in API routes
-5. **Validation**: Validate all user inputs with Zod
+## Git Workflow
 
-### Git Workflow
-1. **Branch Naming**: `feature/`, `bugfix/`, `hotfix/`
-2. **Commit Messages**: Conventional commits
-3. **Pull Requests**: Code review required
-4. **Main Branch Protection**: Enabled
-
-### Performance Considerations
-1. **Database**: Use indexes for frequently queried fields
-2. **API**: Implement pagination for large datasets
-3. **Frontend**: Use React.memo for expensive components
-4. **Images**: Use Next.js Image component for optimization
-
-## Troubleshooting Common Issues
-
-### Database Connection
-```bash
-# Check if PostgreSQL is running
-sudo service postgresql status
-
-# Connect to database
-psql -U postgres -d lostandfound
-
-# Reset database (development only)
-npx prisma db reset
-```
-
-### Authentication Issues
-1. **Session not persisting**: Check NEXTAUTH_SECRET and NEXTAUTH_URL
-2. **Credentials not working**: Verify password hashing
-3. **Role not recognized**: Check database role field
-
-### Build Issues
-1. **TypeScript errors**: Run `npm run type-check`
-2. **Prisma client missing**: Run `npx prisma generate`
-3. **Environment variables**: Ensure `.env.local` is properly configured
+- Branches: `feature/`, `bugfix/`, `hotfix/`
+- Conventional commit messages
+- `main` is the integration branch; `develop` was merged into it
+- Version lives in `lib/version.ts`; patch bumps at will, minor/major with owner sign-off

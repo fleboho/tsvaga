@@ -1,68 +1,93 @@
 # Project Brief
 
-## Project Overview
-**Lost & Found MVP-1** is a web application that helps people recover lost items by allowing the public to search for found items, admins to manage found items, and registered users to create alerts for items they've lost.
+**Last updated:** 2026-10-21
+**Version:** 0.1.2 (MVP-1)
 
-## Core Requirements (MVP-1 Scope)
+## Overview
 
-### 1. Public Features
-- Search found items by keywords
-- View detailed information about found items
+**Tsvaga** is a lost & found web application. The public searches a catalog of found
+items, registered users create alerts and are notified (mock email) when a matching item
+is logged, and admins maintain the catalog, categories, and locations.
 
-### 2. Registered User Features
-- Create, view, update, and delete personal alerts
-- Receive email notifications when items matching their alerts are found (mocked)
+## MVP-1 Scope (as built)
 
-### 3. Admin Features
-- Create, edit, and delete found items
-- Mark items as returned to their owners
+### 1. Public (no auth)
+- Keyword search with category and location filters and pagination
+- Advanced document search (document number, year, issuing authority, holder name)
+- Item detail page with image gallery
+- Contact-admin form that sends a mock email (`console.log`)
 
-### 4. System Features
-- Alert matching runs only when a new item is created
-- Matching logic:
-  - Case-insensitive keyword containment match against item title and description
-  - Category must match exactly if alert category is set
-  - Location must match exactly if alert location is set
-- Contact Admin form on item detail page (sends mock email via console.log)
+### 2. Registered users
+- Register and sign in (credentials; Google optional)
+- User dashboard with alert statistics
+- Create, list, edit, and delete personal alerts (owner-scoped)
+- Alerts support keywords, category, location, color, and document fields
 
-## Technology Stack (Mandatory)
-- **Framework:** Next.js (App Router)
-- **Backend:** Next.js Route Handlers under `/app/api`
-- **Language:** TypeScript
+### 3. Admin
+- Admin dashboard
+- Create, edit, delete items; upload and remove item images
+- Mark items returned (triggers matching)
+- Manage categories
+- Manage locations
+
+### 4. System
+- Alert matching on new item creation and on mark-returned:
+  1. All keywords present in title + description (case-insensitive)
+  2. Category matches if the alert sets one
+  3. Location matches if the alert sets one
+  4. Document fields match for document alerts
+  5. Color matches if the alert sets one
+- Mock notification output only
+- Items are archived to `DeletedItem` on delete
+
+## Technology Stack (mandatory)
+
+- **Framework:** Next.js 16 (App Router, TypeScript)
+- **Backend:** Next.js Route Handlers under `app/api`
 - **Database:** PostgreSQL
-- **ORM:** Prisma
-- **Authentication:** Auth.js (NextAuth) — Credentials provider only
-- **Email:** Mock only using `console.log`
+- **ORM:** Prisma 6
+- **Auth:** NextAuth v4 — credentials provider, plus optional Google OAuth
+- **UI:** React 19, Tailwind CSS 4
+- **Validation:** Zod 4
+- **Uploads:** Uploadthing for images
+- **Email:** mocked with `console.log`
 
-## User Roles & Permissions
-- **Public (Unauthenticated):** Search items, view item details
-- **Registered User:** Manage their own alerts, receive notifications
-- **Admin:** Manage all found items, mark items as returned
+## Roles & Permissions
 
-## Explicitly Out of Scope (DO NOT IMPLEMENT)
-- SMS notifications
-- WhatsApp notifications
-- Maps or GPS functionality
+| Role | Capabilities |
+| --- | --- |
+| Public | Search, view item details, contact admin |
+| `USER` | Everything public + dashboard, own alert CRUD |
+| `ADMIN` | Everything a user can do + item/category/location management, mark returned |
+
+## Out of Scope (do not implement in MVP-1)
+
+- SMS or WhatsApp notifications
+- Maps, GPS, or geolocation features
 - AI features or image comparison
-- User-posted found items
+- Public/user-submitted found items (admins only in MVP-1)
 - Bulk import/export
-- Mobile applications
+- Native mobile applications
 - Analytics dashboards
 - Success stories
 - Payments or monetization
 - GDPR compliance workflows
-- Social login providers
+- Real email delivery (console mock only)
+- Additional social login providers beyond the optional Google integration
 
-## Project Goals
-1. Create a functional MVP-1 that demonstrates core lost & found workflow
-2. Establish clean architecture following the mandatory technology stack
-3. Provide clear separation of concerns between public, user, and admin functionality
-4. Implement mock email notifications that can be replaced with real email service later
+## Goals
+
+1. Demonstrate the core lost & found workflow end to end
+2. Keep a clean separation between public, user, and admin concerns
+3. Keep notifications behind a single replaceable point (console → real provider later)
+4. Hand over a codebase that builds cleanly and is ready for a development team
 
 ## Success Criteria
-- Public users can search and view found items
-- Registered users can create and manage alerts
-- Admins can manage the found items catalog
-- Alert matching works according to specified rules
-- Contact form sends mock emails
-- All features work within the defined technology stack
+
+- [x] Public users can search and view found items
+- [x] Registered users can create and manage alerts
+- [x] Admins can manage the catalog, categories, and locations
+- [x] Alert matching follows the documented rules
+- [x] Contact form produces a mock email
+- [x] Everything runs on the mandated stack
+- [x] Production build passes (`next build`, `tsc --noEmit`)

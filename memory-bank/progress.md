@@ -1,192 +1,111 @@
 # Progress
 
+**Last updated:** 2026-10-21
+**App version:** 0.1.2
+**MVP-1 status:** Feature complete, in closeout/handover
+
+## Verification Snapshot (2026-10-21)
+
+| Check | Result |
+| --- | --- |
+| `npx tsc --noEmit` | ✅ 0 errors |
+| `npx next build` | ✅ compiles, 21 routes generated |
+| `npm run lint` | ❌ broken — `next lint` removed in Next 16 |
+| Automated tests | ❌ none configured |
+| Git state | `main` clean, in sync with `origin/main` |
+
 ## What Works
-### ✅ Completed
-1. **Memory Bank Documentation** (2025-01-24)
-   - Created all core memory bank files
-   - Established project documentation foundation
-   - Defined MVP-1 scope and technical architecture
 
-2. **Project Infrastructure** (2025-01-25)
-   - Next.js project with TypeScript is set up
-   - PostgreSQL database with Prisma ORM configured
-   - Basic project structure created
+### Public features ✅
+- Home page with search entry point
+- `/search`: keyword + category + location filtering, pagination, item cards
+- `/search/advanced`: document-aware search
+- `/items/[id]`: gallery, metadata, status badge, contact-admin form
+- Contact form validates input and logs a mock email to the console
 
-3. **Database Schema**
-   - User model with roles (user/admin)
-   - Item model with status (AVAILABLE/RETURNED)
-   - Alert model for user notifications
-   - Proper relationships established
+### Authentication ✅
+- Credentials registration (`/api/auth/register`) with bcrypt hashing
+- Credentials login (`/login`) and Google OAuth (enabled only when
+  `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` are set)
+- JWT sessions with `id` and `role` claims; Prisma adapter + `Account`/`Session` tables
+- Role-based guards: `requireAuth()`, `requireAdmin()`, `checkAdminAccess()`
 
-4. **Public Features** (2025-01-25)
-   - Home page with search functionality
-   - Search page with server-side search, filters, and pagination
-   - Item detail page with photos, metadata, and status
-   - Contact Admin form with mock email functionality
-   - API endpoints for items search and contact
+### User features ✅
+- `/dashboard` with live alert statistics
+- `/alerts` full CRUD, user isolation enforced in API routes
+- Alerts support category/location, document fields, and color
 
-### 📋 Documentation Status
-- [x] projectbrief.md - MVP scope and requirements
-- [x] productContext.md - User experience and business context
-- [x] activeContext.md - Current work focus and next steps
-- [x] systemPatterns.md - Technical architecture and patterns
-- [x] techContext.md - Technology stack and setup
-- [x] progress.md - This file tracking progress
+### Admin features ✅
+- `/admin/dashboard` with summary stats
+- `/admin/items`: modal create, search/filter, edit, delete, image upload/removal
+- `/admin/items/[id]/edit`
+- Mark item as returned → moves item to `RETURNED` and runs alert matching
+- `/admin/categories`: category CRUD
+- `/admin/locations`: location CRUD
 
-## What's Left to Build
+### Alert matching ✅
+- Runs on admin item creation and on mark-returned
+- Keyword AND-match against title + description, then optional exact category,
+  location, document fields, and color
+- Notifications are `console.log` only (MVP-1 requirement)
 
-### Phase 1: Project Setup & Foundation ✓ COMPLETED
-- [x] Initialize Next.js project with TypeScript
-- [x] Set up PostgreSQL database
-- [x] Configure Prisma ORM with schema
-- [ ] Set up Auth.js (NextAuth) with credentials provider
-- [x] Create basic project structure
-- [x] Seed database with sample data
+## Data Model (actual)
 
-### Phase 2: Core Database & Authentication
-- [x] Implement User model with roles (user/admin)
-- [x] Implement Item model with status
-- [x] Implement Alert model for user notifications
-- [ ] Set up authentication flows (register/login)
-- [ ] Implement role-based access control
+`User`, `Account`, `Session`, `VerificationToken`, `Item`, `DeletedItem`,
+`Alert`, `Category`, `Location`; enums `Role` (USER/ADMIN) and `ItemStatus`
+(AVAILABLE/RETURNED). Categories and locations are first-class tables, not enums.
 
-### Phase 3: Public Features ✓ COMPLETED & VERIFIED
-- [x] Public search page (no auth required) - Verified working
-- [x] Item listing with search functionality - Verified working with pagination
-- [x] Item detail page with contact form - Verified working (fixed Next.js 16 params issue)
-- [x] Mock email sending via console.log - Verified working
-- [x] Home page with search - Verified working
-- [x] API endpoints for items, filters, contact - Verified working
+## Known Gaps
 
-### Phase 4: User Features ✓ COMPLETED
-- [x] User dashboard (authenticated) - Updated with real-time alert statistics
-- [x] Alert creation/management - Full CRUD implemented with API endpoints and UI
-- [ ] Alert matching logic - Still pending (runs when items are created)
-- [ ] Notification system (mock emails) - Still pending
+1. **Lint script broken** — `next lint` no longer exists in Next 16; `.eslintrc.json`
+   is legacy format for ESLint 9. Needs flat config + `eslint .`
+2. **No tests** — no runner, no unit/integration/e2e coverage
+3. **No migration history** — `/prisma/migrations` is gitignored; schema is applied
+   with `prisma db push`. Blocks safe staged/production rollouts
+4. **Color not exposed in admin item form** — TODO in `app/api/admin/items/route.ts`
+5. **Uploads require Uploadthing** — images go through `utapi` (`lib/file-upload.ts`);
+   without `UPLOADTHING_TOKEN` admin image uploads fail. Legacy `/public/uploads` config remains
+6. **Real email** — intentionally out of scope for MVP-1
 
-### Phase 5: Admin Features
-- [ ] Admin dashboard
-- [ ] Item creation/management
-- [ ] Mark items as returned
-- [ ] Admin-only routes and components
+## Progress by Area
 
-### Phase 6: Polish & Testing
-- [ ] Error handling and validation
-- [ ] Responsive design
-- [ ] Testing core flows
-- [ ] Documentation updates
+| Area | Status |
+| --- | --- |
+| Infrastructure & tooling | 90% (lint/tests/migrations open) |
+| Database & schema | 100% |
+| Authentication & RBAC | 100% |
+| Public features | 100% |
+| User features | 100% |
+| Admin features | 100% |
+| Alert matching | 100% (console notifications) |
+| Documentation | 100% (aligned 2026-10-21) |
 
-## Current Status
-- **Overall Progress**: 60%
-- **Code Written**: 80%
-- **Database Setup**: 100%
-- **Authentication**: 30%
-- **UI Components**: 90%
+## History of Decisions
 
-### Detailed Status by Component
+- **2025-01-24** — Project initialized; memory-bank structure created; MVP-1 scope fixed
+- **2025-01-25** — Public features implemented and verified; Next 16 `params`-as-Promise fixed;
+  uploads excluded from git
+- **2025-01-27** — Full alert CRUD + `/alerts` UI; dashboard stats; home search location
+  changed from dropdown to free text; admin items page gained modal create + search
+- **2025-01-28** — Navbar restructured (public left, account right)
+- **2026-10 (0.1.1–0.1.2)** — Favicon/brand logo, placeholder item thumbnail, eBay-style
+  horizontal search cards with enlarged thumbnails, duplicate header fix, Google OAuth
+  (optional), admin locations page, mark-returned with alert matching
+- **2026-10-21** — Documentation aligned with actual codebase; closeout audit performed
 
-#### 1. Project Infrastructure ✓
-- Next.js Project: Complete
-- TypeScript Config: Complete
-- Database Connection: Complete
-- Prisma Setup: Complete
+## Next Steps (closeout)
 
-#### 2. Authentication System
-- Auth.js Configuration: Partially complete
-- User Model: Complete
-- Registration Flow: Not started
-- Login Flow: Not started
-- Session Management: Not started
+1. Fix `npm run lint` (flat ESLint config)
+2. Introduce Prisma migrations and baseline the current schema
+3. Add a minimal test suite (auth guards, alert matching, search filters)
+4. Expose color in the admin item create form
+5. Confirm Uploadthing plan/limits and document production image handling
 
-#### 3. Database Models ✓
-- User Schema: Complete
-- Item Schema: Complete
-- Alert Schema: Complete
-- Relationships: Complete
-- Indexes: Basic indexes implemented
+## Success Criteria
 
-#### 4. Public Features ✓
-- Search Page: Complete with filters and pagination
-- Item Listing: Complete with ItemCard components
-- Item Details: Complete with images and metadata
-- Contact Form: Complete with mock email
-
-#### 5. User Features ✓ PARTIALLY COMPLETED
-- Dashboard: Complete with real-time statistics and navigation
-- Alert Management: Complete with full CRUD operations
-- Notifications: Still pending (mock email implementation needed)
-
-#### 6. Admin Features
-- Admin Dashboard: Partially complete (basic page exists)
-- Item Management: Partially complete (API routes exist)
-- Admin Routes: Partially complete
-
-## Known Issues
-1. **Authentication incomplete** - Need to implement Auth.js flows (API endpoints protected but UI flows need completion)
-2. **Admin features need completion** - Basic structure exists but needs full implementation
-3. **Alert matching logic pending** - Matching logic not yet implemented (runs when items are created)
-4. **TypeScript errors in admin API routes** - Next.js 16 params as Promise issue (doesn't affect public pages)
-
-## Evolution of Project Decisions
-
-### 2025-01-24: Project Initialization
-- Created memory bank documentation structure
-- Defined MVP-1 scope based on .clinerules
-- Established technical architecture patterns
-- Documented mandatory technology stack
-- Outlined user roles and permissions
-
-### 2025-01-25: Public Features Implementation & Verification
-- Implemented all public pages as requested
-- Created server-side search with filters and pagination
-- Built Contact Admin form with mock email functionality
-- Developed reusable components (ItemCard, Pagination, ContactForm)
-- Established API endpoints for items and contact
-- Fixed Next.js 16 compatibility issues with params as Promise
-- Verified all public features work correctly
-- Seeded database with sample items for testing
-
-### 2025-01-27: User Alert CRUD Implementation
-- Implemented complete alert CRUD API endpoints (POST/GET/PATCH/DELETE)
-- Created alert management UI at `/alerts` with create, edit, delete functionality
-- Built reusable AlertForm component with validation matching API schemas
-- Updated user dashboard to show real-time alert statistics
-- Implemented proper user isolation (users can only access their own alerts)
-- Added authentication protection to all alert endpoints
-
-### Key Decisions Made:
-1. **Technology Stack**: Strict adherence to .clinerules requirements
-2. **Architecture**: Next.js App Router with route handlers
-3. **Database**: PostgreSQL with Prisma ORM
-4. **Authentication**: Auth.js with credentials provider only
-5. **Email**: Mock implementation via console.log for MVP-1
-6. **Search Implementation**: Server-side search with URL parameters
-7. **Contact Flow**: Modal-based form accessible to anyone
-
-### Design Patterns Established:
-1. **Role-Based Access**: Clear separation of public, user, admin
-2. **Alert Matching**: Runs only on new item creation
-3. **Contact Flow**: All communication through admin
-4. **Data Models**: User, Item, Alert with proper relationships
-5. **Component Architecture**: Reusable components for consistency
-
-## Next Immediate Actions
-1. **Complete Auth.js setup** with credentials provider
-2. **Implement user registration and login flows**
-3. **Implement alert matching logic** (runs when items are created)
-4. **Add mock email notifications** for matched alerts
-5. **Complete admin features** for item management
-
-## Success Criteria Check
 - [x] Public users can search and view found items
 - [x] Registered users can create and manage alerts
-- [ ] Admins can manage the found items catalog
-- [ ] Alert matching works according to specified rules
+- [x] Admins can manage the found items catalog
+- [x] Alert matching works per the documented rules
 - [x] Contact form sends mock emails
-- [x] All features work within the defined technology stack
-
-## Notes
-- This is MVP-1 only - focus on core functionality
-- Keep implementation simple and testable
-- Follow incremental development approach
-- Update this file after each significant milestone
+- [x] All features run on the mandated stack

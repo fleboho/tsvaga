@@ -1,197 +1,167 @@
 # System Patterns
 
-## System Architecture
+**Last updated:** 2026-10-21
 
-### High-Level Architecture
+## Architecture
+
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Next.js App   │◄──►│   API Routes    │◄──►│   PostgreSQL    │
-│   (App Router)  │    │  (/app/api/*)   │    │    Database     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Components    │    │  Route Handlers │    │   Prisma ORM    │
-│   (React/TSX)   │    │  (TypeScript)   │    │   (Schema)      │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
+┌──────────────────┐      ┌──────────────────┐      ┌──────────────────┐
+│  Next.js App     │ ───► │  Route Handlers  │ ───► │   PostgreSQL     │
+│  (App Router)    │      │  app/api/*       │      │   via Prisma     │
+│  Server + Client │ ◄─── │  Zod validated   │ ◄─── │   Prisma Client  │
+└──────────────────┘      └──────────────────┘      └──────────────────┘
+        │                         │
+        │                         ├─► Uploadthing (image upload)
+        └─► NextAuth (JWT + Prisma adapter)
 ```
 
-### Core Components
-1. **Frontend Layer**: Next.js pages and components
-2. **API Layer**: Route handlers for business logic
-3. **Data Layer**: Prisma ORM with PostgreSQL
-4. **Auth Layer**: Auth.js for authentication and authorization
+Layers: pages/server components → API route handlers → Prisma → PostgreSQL.
+Auth is a cross-cutting concern provided by NextAuth v4 with JWT sessions.
 
-## Key Technical Decisions
+## Data Model
 
-### 1. Authentication & Authorization
-- **Library**: Auth.js (NextAuth) v5+
-- **Provider**: Credentials only (no social providers)
-- **Session Strategy**: JWT for simplicity
-- **Role Management**: User role stored in database (user/admin)
+Core models (see `prisma/schema.prisma`):
 
-### 2. Database Schema Patterns
-```prisma
-// Core entities:
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String   // hashed
-  role      Role     @default(USER)
-  alerts    Alert[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
+- **User** — `id`, `email` (unique), optional `password` (bcrypt), `name`, `image`,
+  `role` (`USER` | `ADMIN`), relations to alerts, items, accounts, sessions
+- **Account / Session / VerificationToken** — NextAuth adapter tables for OAuth
+- **Item** — title, description, `categoryId` → `Category`, `customCategory`,
+  `locationId` → `Location`, `status` (`AVAILABLE` | `RETURNED`), `imageUrls String[]`,
+  `createdById` → User, `isDocument`, `documentNumber`, `documentYear`,
+  `issuingAuthority`, `holderName`, `color`
+- **DeletedItem** — flat archive copy of an item on delete (category/location as strings,
+  no relation, plus `deletedAt`)
+- **Alert** — `keywords`, category/location (FK + `customCategory`), `userId`,
+  document fields, `color`
+- **Category** / **Location** — admin-managed lookup tables with `isActive`;
+  Location also stores address/lat/long
 
-model Item {
-  id          String   @id @default(cuid())
-  title       String
-  description String
-  category    String?
-  location    String?
-  status      ItemStatus @default(AVAILABLE)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  createdBy   User?    @relation(fields: [createdById], references: [id])
-  createdById String?
-}
+Notes:
+- Categories and locations are **tables**, not enums. "Other" is represented by
+  `customCategory` free text.
+- `imageUrls` stores paths (`/uploads/...` locally, or remote URLs).
 
-model Alert {
-  id          String   @id @default(cuid())
-  keywords    String
-  category    String?
-  location    String?
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
+## Auth & Authorization
 
-enum Role {
-  USER
-  ADMIN
-}
+- `lib/auth.ts` exports `authOptions` (NextAuth v4)
+  - Providers: Credentials always; Google only if env vars are present
+  - Session strategy: `jwt`; `jwt`/`session` callbacks copy `id` and `role`
+  - `pages.signIn = "/login"`
+- `lib/auth-utils.ts` provides guards:
+  - `getCurrentUser()` — session user or `null`
+  - `requireAuth()` — redirect to `/login`
+  - `requireAdmin(returnJson?)` — redirect or 403 descriptor
+  - `checkAdminAccess()` — `Response | null` for API handlers
+- No global middleware. Every admin page/route calls the guard explicitly.
+- Registration lives in `app/api/auth/register/route.ts` (Zod + bcrypt, role defaults to USER).
 
-enum ItemStatus {
-  AVAILABLE
-  RETURNED
-}
+## API Patterns
+
+```
+GET    /api/items                    public search (q, category, location, page…)
+GET    /api/items/[id]               public item detail
+GET    /api/items/filters            categories + locations for filter UI
+POST   /api/contact                  mock contact email
+
+GET    /api/alerts                   user's alerts
+POST   /api/alerts                   create alert
+PATCH  /api/alerts/[id]              update (owner only)
+DELETE /api/alerts/[id]              delete (owner only)
+
+GET    /api/categories               list
+POST   /api/categories               admin create
+PATCH  /api/categories/[id]          admin update
+DELETE /api/categories/[id]          admin delete
+
+GET    /api/locations                list
+POST   /api/locations                admin create
+PATCH  /api/locations/[id]           admin update
+DELETE /api/locations/[id]           admin delete
+
+GET    /api/admin/items              admin list
+POST   /api/admin/items              admin create + alert matching
+PUT    /api/admin/items/[id]         admin update
+DELETE /api/admin/items/[id]         admin delete (archives to DeletedItem)
+POST   /api/admin/items/[id]/images  upload image
+DELETE /api/admin/items/[id]/images/[index]  remove image
+POST   /api/admin/items/[id]/mark-returned   status → RETURNED + alert matching
 ```
 
-### 3. API Design Patterns
-- **RESTful conventions** with Next.js Route Handlers
-- **Error Handling**: Consistent error responses with status codes
-- **Validation**: Zod for request validation
-- **Authentication**: Protected routes using NextAuth middleware
+Conventions:
+- Zod schemas at the top of each handler (or in `lib/alert-schemas.ts`)
+- Errors as `Response.json({ error }, { status })`
+- Next 16 dynamic params: `const { id } = await params`
 
-### 4. Alert Matching Algorithm
-```typescript
-// Pseudocode for alert matching
-function findMatchingAlerts(newItem: Item) {
-  const alerts = await prisma.alert.findMany({
-    where: {
-      AND: [
-        // Keyword match (case-insensitive, contains)
-        {
-          OR: [
-            { keywords: { contains: newItem.title, mode: 'insensitive' } },
-            { keywords: { contains: newItem.description, mode: 'insensitive' } }
-          ]
-        },
-        // Category match (if alert has category)
-        ...(newItem.category ? [{ category: newItem.category }] : []),
-        // Location match (if alert has location)
-        ...(newItem.location ? [{ location: newItem.location }] : [])
-      ]
-    },
-    include: { user: true }
-  });
-  
-  return alerts;
-}
+## Alert Matching
+
+Implemented twice, with the same rules:
+`app/api/admin/items/route.ts` (on create) and
+`app/api/admin/items/[id]/mark-returned/route.ts` (on return).
+
+```
+alert matches item when:
+  1. every whitespace-split keyword of alert.keywords appears in
+     `${title} ${description}` (lowercased)            [required]
+  2. alert.categoryId    === item.categoryId            [if set]
+  3. alert.locationId    === item.locationId            [if set]
+  4. document fields equal: number, year, authority,
+     holder name                                        [if alert.isDocument]
+  5. alert.color         === item.color                 [if set]
 ```
 
-## Component Relationships
+Matching alerts are iterated and a mock email is printed:
 
-### Page Structure
 ```
-/app
-  /api
-    /auth/[...nextauth]    # Auth.js routes
-    /items                 # Item management
-    /alerts                # Alert management
-    /notifications         # Notification sending
-  /(public)                # Public pages (no auth required)
-    /search                # Search page
-    /items/[id]            # Item detail page
-  /(auth)                  # Authenticated pages
-    /dashboard             # User dashboard
-    /alerts                # User alert management
-  /admin                   # Admin pages (admin role required)
-    /items                 # Admin item management
-  layout.tsx               # Root layout with auth provider
+To:      <user email>
+Subject: ...
+Message: ...
 ```
 
-### Key Component Dependencies
-1. **AuthProvider**: Wraps entire app, provides session context
-2. **Navbar**: Changes based on user role (public/user/admin)
-3. **SearchComponent**: Used on public search page
-4. **ItemCard**: Reusable component for displaying items
-5. **AlertForm**: Used by users to create/edit alerts
-6. **ItemForm**: Used by admins to create/edit items
+No notification records are persisted; nothing is deduplicated. If real email is added,
+this is the single place to swap in a provider, and de-duplication should be introduced.
 
-## Critical Implementation Paths
+## Flows
 
-### 1. User Registration & Login Flow
-```
-User submits credentials → Auth.js validates → Create session → Redirect to dashboard
-```
+**Public search** — `/search` (server component reads searchParams) → `prisma.item.findMany`
+with `contains`/`insensitive` filters + pagination → `ItemCard` list → `/items/[id]` →
+contact modal → `POST /api/contact` → console log.
 
-### 2. Item Creation Flow (Admin)
-```
-Admin logs in → Navigates to /admin/items → Fills form → Submits → 
-API creates item → Trigger alert matching → Send notifications → Return success
-```
+**Registration/login** — `/register` → `POST /api/auth/register` (bcrypt) → `/login` →
+`signIn("credentials")` → JWT with role → redirect to `/dashboard` or `/admin/dashboard`.
 
-### 3. Alert Creation Flow (User)
-```
-User logs in → Navigates to /alerts → Fills form → Submits → 
-API creates alert → Return success
-```
+**Alert lifecycle** — `/alerts` (requires auth) → `/api/alerts` CRUD → scoped by `userId`.
 
-### 4. Search Flow (Public)
-```
-User visits /search → Enters keywords → API searches items → 
-Display results → Click item → View details → Contact admin
-```
+**Admin item creation** — modal → `POST /api/admin/items` (+ image uploads) → transaction
+creates item → fetch active alerts → filter in memory → log matches.
 
-## Data Flow Patterns
+**Mark returned** — admin action → `POST .../mark-returned` → update status → re-run
+matching → log.
 
-### 1. Authentication Flow
-```
-Client → NextAuth → Database → Session → Protected Route
-```
+**Delete item** — `DELETE /api/admin/items/[id]` → copy row into `DeletedItem` →
+delete original.
 
-### 2. CRUD Operations
-```
-Component → API Route → Prisma Client → Database → Response
-```
+## Security
 
-### 3. Notification Flow
-```
-New Item → Alert Matching → Find Users → Mock Email (console.log) → Record Notification
-```
+- Zod validation on all write endpoints
+- Prisma parameterized queries
+- Ownership checks on alert routes (`userId` from session, never from the body)
+- Admin checks on admin routes and pages
+- bcrypt hashing (cost 10)
+- React escaping for rendered content; no `dangerouslySetInnerHTML` usage
 
-## Performance Considerations
-1. **Database Indexing**: Index on Item(title, description), Alert(keywords, category, location)
-2. **Caching**: Consider React Cache for frequently accessed data
-3. **Pagination**: Implement for search results and admin lists
-4. **Optimistic Updates**: For better UX in forms
+## Frontend Patterns
 
-## Security Patterns
-1. **Input Validation**: Zod schemas for all API inputs
-2. **SQL Injection Prevention**: Prisma parameterized queries
-3. **XSS Protection**: React's built-in escaping, sanitize user input
-4. **CSRF Protection**: NextAuth provides CSRF tokens
-5. **Role-Based Access**: Middleware checks user role for admin routes
+- App Router with server components for data fetching; client components only for
+  interactivity (`*Client.tsx`, forms, modals)
+- Shared public components under `app/search/` (`ItemCard`, `Pagination`, forms,
+  `SearchParamsContext`); shared app-wide components under `components/`
+- Tailwind utility styling, full-width layouts, mobile menu in `Navbar`
+- `components/AuthProvider.tsx` wraps the app with `SessionProvider`
+- Placeholder image `public/placeholder-item.svg` when `imageUrls` is empty
+
+## Performance Notes
+
+- Indexes exist on FK/uniqueness fields; keyword search uses `contains` (no full-text
+  index) — acceptable at MVP scale, revisit with `pg_trgm` or FTS if volume grows
+- Pagination on public search and admin lists
+- `images.unoptimized` in development only
