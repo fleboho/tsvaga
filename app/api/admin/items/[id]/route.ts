@@ -37,6 +37,7 @@ export async function PATCH(
     let documentYear: string | undefined;
     let issuingAuthority: string | undefined;
     let holderName: string | undefined;
+    let color: string | undefined;
 
     if (contentType.includes('multipart/form-data')) {
       const formData = await request.formData();
@@ -49,6 +50,7 @@ export async function PATCH(
       documentYear = (formData.get('documentYear') as string) || undefined;
       issuingAuthority = (formData.get('issuingAuthority') as string) || undefined;
       holderName = (formData.get('holderName') as string) || undefined;
+      color = (formData.get('color') as string) || undefined;
     } else {
       const body = await request.json();
       title = body.title;
@@ -60,6 +62,7 @@ export async function PATCH(
       documentYear = body.documentYear;
       issuingAuthority = body.issuingAuthority;
       holderName = body.holderName;
+      color = body.color;
     }
     
     // Build update data
@@ -99,6 +102,9 @@ export async function PATCH(
     updateData.documentYear = documentYear || null;
     updateData.issuingAuthority = issuingAuthority || null;
     updateData.holderName = holderName || null;
+    if (color !== undefined) {
+      updateData.color = color.trim() || null;
+    }
     
     // Update item
     const updatedItem = await prisma.item.update({
@@ -178,6 +184,8 @@ export async function DELETE(
         documentYear: existingItem.documentYear,
         issuingAuthority: existingItem.issuingAuthority,
         holderName: existingItem.holderName,
+        color: existingItem.color,
+        imageUrls: existingItem.imageUrls,
       },
     });
     
@@ -185,6 +193,12 @@ export async function DELETE(
     await prisma.item.delete({
       where: { id },
     });
+
+    // Remove the images from Uploadthing (best effort; never blocks the delete)
+    if (existingItem.imageUrls.length > 0) {
+      const { deleteFile } = await import('@/lib/file-upload');
+      await Promise.allSettled(existingItem.imageUrls.map((url) => deleteFile(url)));
+    }
     
     return NextResponse.json({
       message: 'Item deleted successfully (moved to archive)',

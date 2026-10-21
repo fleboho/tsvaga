@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { getDisplayNameFromEmail } from '@/lib/utils';
@@ -37,6 +37,7 @@ export default function AdminItemsClient() {
     documentYear: '',
     issuingAuthority: '',
     holderName: '',
+    color: '',
   });
   
   const [images, setImages] = useState<File[]>([]);
@@ -48,37 +49,8 @@ export default function AdminItemsClient() {
   
   // Search state
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredItems, setFilteredItems] = useState<Item[]>([]);
 
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-    } else if (session?.user?.role !== 'ADMIN') {
-      router.push('/dashboard?error=admin_required');
-    } else {
-      fetchItems();
-    }
-  }, [status, session, router]);
-
-  // Filter items based on search query
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredItems(items);
-    } else {
-      const query = searchQuery.toLowerCase();
-      const filtered = items.filter(item => 
-        item.title.toLowerCase().includes(query) ||
-        item.description.toLowerCase().includes(query) ||
-        (item.category && item.category.toLowerCase().includes(query)) ||
-        (item.location && item.location.toLowerCase().includes(query)) ||
-        item.status.toLowerCase().includes(query) ||
-        (item.createdBy?.email && item.createdBy.email.toLowerCase().includes(query))
-      );
-      setFilteredItems(filtered);
-    }
-  }, [items, searchQuery]);
-
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/admin/items');
@@ -101,7 +73,31 @@ export default function AdminItemsClient() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login');
+    } else if (session?.user?.role !== 'ADMIN') {
+      router.push('/dashboard?error=admin_required');
+    } else {
+      fetchItems();
+    }
+  }, [status, session, router, fetchItems]);
+
+  // Filter items based on search query
+  const filteredItems = useMemo(() => {
+    if (!searchQuery.trim()) return items;
+    const query = searchQuery.toLowerCase();
+    return items.filter(item =>
+      item.title.toLowerCase().includes(query) ||
+      item.description.toLowerCase().includes(query) ||
+      (item.category && item.category.toLowerCase().includes(query)) ||
+      (item.location && item.location.toLowerCase().includes(query)) ||
+      item.status.toLowerCase().includes(query) ||
+      (item.createdBy?.email && item.createdBy.email.toLowerCase().includes(query))
+    );
+  }, [items, searchQuery]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -174,6 +170,7 @@ export default function AdminItemsClient() {
       formData.append('documentYear', newItem.documentYear);
       formData.append('issuingAuthority', newItem.issuingAuthority);
       formData.append('holderName', newItem.holderName);
+      formData.append('color', newItem.color);
       
       // Append images
       images.forEach((file, index) => {
@@ -213,6 +210,7 @@ export default function AdminItemsClient() {
         documentYear: '',
         issuingAuthority: '',
         holderName: '',
+        color: '',
       });
       setImages([]);
       setImagePreviews([]);
@@ -599,7 +597,22 @@ export default function AdminItemsClient() {
                       />
                     </div>
                   </div>
-                  
+
+                  {/* Colour */}
+                  <div>
+                    <label className="block text-gray-700 text-sm font-medium mb-1">
+                      Colour
+                    </label>
+                    <input
+                      type="text"
+                      value={newItem.color}
+                      onChange={(e) => setNewItem({...newItem, color: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      placeholder="e.g., Black, Blue, Silver"
+                      disabled={creating}
+                    />
+                  </div>
+
                   {/* Document Fields */}
                   <div className="border-t border-gray-200 pt-6">
                     <div className="flex items-center mb-4">

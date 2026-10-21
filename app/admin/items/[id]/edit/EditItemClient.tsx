@@ -23,6 +23,7 @@ interface Item {
   documentYear: string | null;
   issuingAuthority: string | null;
   holderName: string | null;
+  color: string | null;
 }
 
 interface EditItemClientProps {
@@ -43,6 +44,7 @@ export default function EditItemClient({ item }: EditItemClientProps) {
     documentYear: item.documentYear || '',
     issuingAuthority: item.issuingAuthority || '',
     holderName: item.holderName || '',
+    color: item.color || '',
   });
   
   const [existingImages, setExistingImages] = useState<string[]>(item.imageUrls || []);
@@ -154,6 +156,7 @@ export default function EditItemClient({ item }: EditItemClientProps) {
       formDataToSend.append('documentYear', formData.documentYear);
       formDataToSend.append('issuingAuthority', formData.issuingAuthority);
       formDataToSend.append('holderName', formData.holderName);
+      formDataToSend.append('color', formData.color);
       
       // Append images to delete
       imagesToDelete.forEach(url => {
@@ -495,6 +498,21 @@ export default function EditItemClient({ item }: EditItemClientProps) {
                     </div>
                   </div>
                 )}
+
+                <div>
+                  <label className="block text-gray-700 text-sm font-medium mb-1">
+                    Colour
+                  </label>
+                  <input
+                    type="text"
+                    name="color"
+                    value={formData.color}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    placeholder="e.g., Black, Blue, Silver"
+                    disabled={loading}
+                  />
+                </div>
               </div>
             </div>
             

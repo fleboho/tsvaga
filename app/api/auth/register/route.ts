@@ -2,15 +2,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { hash } from 'bcryptjs';
 import { z } from 'zod';
+import { checkRateLimit, getClientIp, tooManyRequests } from '@/lib/rate-limit';
 
 // Validation schema for registration
 const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
 });
+
+const RATE_LIMIT = 5;
+const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
 export async function POST(request: NextRequest) {
   try {
+    const limit = await checkRateLimit(
+      `register:${getClientIp(request)}`,
+      RATE_LIMIT,
+      RATE_WINDOW_MS
+    );
+    if (!limit.allowed) return tooManyRequests(limit);
+
     const body = await request.json();
     
     // Validate input

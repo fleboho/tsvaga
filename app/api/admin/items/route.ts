@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkAdminAccess } from '@/lib/auth-utils';
 import { prisma } from '@/lib/db';
+import { matchesAlert } from '@/lib/alert-matching';
+import { sendEmail } from '@/lib/email';
 
 // GET /api/admin/items - Get all items (admin only)
 export async function GET(request: NextRequest) {
@@ -46,6 +48,7 @@ export async function POST(request: NextRequest) {
     let documentYear = '';
     let issuingAuthority = '';
     let holderName = '';
+    let color = '';
     let imageFiles: File[] = [];
 
     const contentType = request.headers.get('content-type') || '';
@@ -64,6 +67,7 @@ export async function POST(request: NextRequest) {
       documentYear = (formData.get('documentYear') as string) || '';
       issuingAuthority = (formData.get('issuingAuthority') as string) || '';
       holderName = (formData.get('holderName') as string) || '';
+      color = (formData.get('color') as string) || '';
 
       // Get image files
       for (let i = 0; i < 3; i++) {
@@ -93,6 +97,7 @@ export async function POST(request: NextRequest) {
       documentYear = body.documentYear || '';
       issuingAuthority = body.issuingAuthority || '';
       holderName = body.holderName || '';
+      color = body.color || '';
     }
     
     // Validate required fields
@@ -129,6 +134,7 @@ export async function POST(request: NextRequest) {
         documentYear: documentYear || null,
         issuingAuthority: issuingAuthority || null,
         holderName: holderName || null,
+        color: color || null,
       },
     });
     
@@ -154,9 +160,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Alert Matching Logic
+    // Alert matching + notifications. Never fail item creation on notification errors.
     try {
-      // Find all active alerts
       const alerts = await prisma.alert.findMany({
         include: {
           user: {
@@ -169,95 +174,44 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Check each alert for matches
-      const matchingAlerts = alerts.filter((alert: any) => {
-        // 1. Keyword matching (case-insensitive containment)
-        const keywords = alert.keywords.toLowerCase().split(/\s+/).filter((k: string) => k.length > 0);
-        const itemText = `${title} ${description}`.toLowerCase();
-        
-        const keywordMatch = keywords.every((keyword: string) => 
-          itemText.includes(keyword)
-        );
-        
-        if (!keywordMatch) return false;
+      const matchingAlerts = alerts.filter((alert) => matchesAlert(alert, updatedItem));
 
-        // 2. Category matching (if alert has category)
-        if (alert.categoryId) {
-          if (!category || alert.categoryId !== category) {
-            return false;
-          }
-        }
+      const results = await Promise.allSettled(
+        matchingAlerts.map((alert) =>
+          sendEmail({
+            to: alert.user.email,
+            subject: `Possible match for your alert: ${title}`,
+            text: [
+              `An item matching your alert has been added to Tsvaga.`,
+              '',
+              `Item: ${title}`,
+              `Description: ${description}`,
+              alert.category?.name ? `Category: ${alert.category.name}` : null,
+              alert.location?.name ? `Location: ${alert.location.name}` : null,
+              '',
+              `View it here: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/items/${updatedItem.id}`,
+              '',
+              `Your alert keywords: ${alert.keywords}`,
+            ]
+              .filter((line): line is string => line !== null)
+              .join('\n'),
+          })
+        )
+      );
 
-        // 3. Location matching (if alert has location)
-        if (alert.locationId) {
-          if (!location || alert.locationId !== location) {
-            return false;
-          }
-        }
-
-        // 4. Document field matching (if alert is for documents)
-        if (alert.isDocument) {
-          // If alert is for documents but item is not a document, no match
-          if (!isDocument) return false;
-
-          // Document number matching (if alert has document number)
-          if (alert.documentNumber && documentNumber) {
-            if (!documentNumber.toLowerCase().includes(alert.documentNumber.toLowerCase())) {
-              return false;
-            }
-          }
-
-          // Document year matching (if alert has document year)
-          if (alert.documentYear && documentYear) {
-            if (!documentYear.toLowerCase().includes(alert.documentYear.toLowerCase())) {
-              return false;
-            }
-          }
-
-          // Issuing authority matching (if alert has issuing authority)
-          if (alert.issuingAuthority && issuingAuthority) {
-            if (!issuingAuthority.toLowerCase().includes(alert.issuingAuthority.toLowerCase())) {
-              return false;
-            }
-          }
-
-          // Holder name matching (if alert has holder name)
-          if (alert.holderName && holderName) {
-            if (!holderName.toLowerCase().includes(alert.holderName.toLowerCase())) {
-              return false;
-            }
-          }
-        }
-
-        // 5. Color matching (if alert has color)
-        if (alert.color) {
-          // Color field is not yet implemented for items, skip for now
-          // TODO: Add color field to item creation form
-        }
-
-        return true;
-      });
-
-      // Send mock email notifications for matching alerts
-      matchingAlerts.forEach((alert: any) => {
-        console.log(`[MOCK EMAIL] Alert match notification sent to: ${alert.user.email}`);
-        console.log(`  Alert ID: ${alert.id}`);
-        console.log(`  Item ID: ${updatedItem.id}`);
-        console.log(`  Item Title: ${title}`);
-        console.log(`  Match Criteria: ${alert.keywords}`);
-        if (alert.category) console.log(`  Category: ${alert.category.name}`);
-        if (alert.location) console.log(`  Location: ${alert.location.name}`);
-        console.log('---');
-      });
+      const sent = results.filter(
+        (result) => result.status === 'fulfilled' && result.value.sent
+      ).length;
 
       if (matchingAlerts.length > 0) {
-        console.log(`Found ${matchingAlerts.length} matching alert(s) for new item ${updatedItem.id}`);
+        console.log(
+          `[alerts] ${matchingAlerts.length} match(es) for item ${updatedItem.id}; ${sent} email(s) sent`
+        );
       }
     } catch (alertError) {
       console.error('Error during alert matching:', alertError);
-      // Don't fail the item creation if alert matching fails
     }
-    
+
     return NextResponse.json(
       { 
         message: 'Item created successfully',

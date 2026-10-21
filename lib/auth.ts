@@ -5,6 +5,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter"
 import { prisma } from "./db"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
+import { checkRateLimit, getClientIp } from "./rate-limit"
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -58,13 +59,25 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
           return null
         }
 
         try {
           const validatedCredentials = loginSchema.parse(credentials)
+
+          // Throttle credential stuffing / brute force: 10 attempts per 15 min.
+          const ip = getClientIp(req as unknown as Request)
+          const limit = await checkRateLimit(
+            `login:${ip}:${validatedCredentials.email.toLowerCase()}`,
+            10,
+            15 * 60 * 1000
+          )
+          if (!limit.allowed) {
+            console.warn(`[auth] login rate limit hit for ${validatedCredentials.email}`)
+            return null
+          }
           
           const user = await prisma.user.findUnique({
             where: { email: validatedCredentials.email }

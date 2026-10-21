@@ -97,6 +97,7 @@ model DeletedItem {
   documentYear   String?
   issuingAuthority String?
   holderName     String?
+  color          String?
   // Note: We don't need relation since original user might be deleted
 }
 
@@ -148,6 +149,29 @@ model Location {
   alerts      Alert[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model ContactRequest {
+  id        String   @id @default(cuid())
+  itemId    String
+  itemTitle String // Snapshot, so the request survives item deletion
+  name      String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@index([itemId])
+  @@index([createdAt])
+}
+
+// Fixed-window counters for API rate limiting.
+// Kept in Postgres so limits hold across serverless instances.
+model RateLimit {
+  key        String   @id // e.g. "contact:203.0.113.7"
+  count      Int      @default(0)
+  windowEnds DateTime
+
+  @@index([windowEnds])
 }
 
 enum ItemStatus {

@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { getDisplayNameFromEmail } from "@/lib/utils"
 
 export default function DashboardPage() {
@@ -20,16 +20,8 @@ export default function DashboardPage() {
   }, [status, router])
 
   // Fetch dashboard data
-  useEffect(() => {
-    if (status === "authenticated") {
-      fetchDashboardData()
-    }
-  }, [status])
-
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     try {
-      setLoading(true)
-      
       // Fetch alert count for the current user
       const alertsResponse = await fetch('/api/alerts')
       if (alertsResponse.ok) {
@@ -53,7 +45,13 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchDashboardData()
+    }
+  }, [status, fetchDashboardData])
 
   if (status === "loading" || loading) {
     return (

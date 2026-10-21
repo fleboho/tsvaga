@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import AlertForm from '@/components/AlertForm'
@@ -58,9 +58,8 @@ export default function AlertsPage() {
   }, [status, router])
 
   // Fetch alerts
-  const fetchAlerts = async () => {
+  const fetchAlerts = useCallback(async () => {
     try {
-      setLoading(true)
       const response = await fetch('/api/alerts')
       
       if (!response.ok) {
@@ -76,10 +75,10 @@ export default function AlertsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   // Fetch categories for dropdown
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const response = await fetch('/api/categories')
       if (response.ok) {
@@ -89,7 +88,7 @@ export default function AlertsPage() {
     } catch (err) {
       console.error('Error fetching categories:', err)
     }
-  }
+  }, [])
 
   // Initial data fetch
   useEffect(() => {
@@ -97,7 +96,7 @@ export default function AlertsPage() {
       fetchAlerts()
       fetchCategories()
     }
-  }, [status])
+  }, [status, fetchAlerts, fetchCategories])
 
   // Handle alert creation
   const handleCreateAlert = async (data: {
